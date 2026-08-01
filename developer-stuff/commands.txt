@@ -1,0 +1,2 @@
+turbo db:generate
+turbo db:migrate
