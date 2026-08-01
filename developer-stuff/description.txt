@@ -1,0 +1,21 @@
+This application is a comprehensive mental health support platform designed primarily for higher education students. It provides confidential, accessible, and institution-connected mental health services through a combination of AI assistance, professional counselling, self-assessment tools, mood tracking, crisis detection, peer support communities, and analytics for institutions.
+
+The application has four main user roles: Students, Counsellors, Institution Administrators, and Peer Mentors.
+
+Students can interact with an AI Mental Health Companion that offers 24/7 conversational support. The chatbot maintains conversation history, detects emotions, extracts common issues such as stress, anxiety, academic pressure, relationship problems, sleep difficulties, and loneliness, and generates personalized coping suggestions and follow-up questions. It also maintains long-term conversation memory to provide more consistent support over time.
+
+Students can book appointments with counsellors available within their institution. The system supports counsellor profiles, specialization details, availability schedules, appointment booking, rescheduling, cancellation, session notes, and appointment history.
+
+The application includes anonymous self-assessment screening using standardized questionnaires such as PHQ-9, GAD-7, PSS, and WHO-5. Students can complete assessments, receive severity classifications, view previous results, and track progress over time. The system can also generate basic interpretations and recommendations based on assessment scores.
+
+A mood and emotion tracking feature allows students to record daily mood using emojis or sliders, add optional journal notes, and view weekly or monthly mood trends. The application can generate summaries of mood patterns and provide reminders for regular check-ins.
+
+The system includes crisis detection capabilities. During AI conversations, messages are analyzed for potential self-harm, suicide ideation, or severe emotional distress. Risk levels are categorized as Low, Medium, High, or Critical. High-risk situations can generate crisis alerts, notify authorized counsellors, and support emergency contact workflows where appropriate.
+
+The application also provides anonymous peer support communities within institutions. Students can join topic-based groups, create anonymous posts, comment on discussions, react to posts, and report inappropriate content. Community moderation can be supported through both automated checks and human moderators or peer mentors.
+
+For institutions, the application provides a Mental Health Analytics Dashboard. The dashboard can display overall wellness indicators, department-wise stress levels, mood trends, assessment statistics, commonly reported concerns, counsellor workload, appointment completion rates, and peer community engagement. Analytics are intended to help institutions understand broad mental health trends while preserving student privacy.
+
+The system also includes notifications for mood reminders, appointment reminders, assessment reminders, AI follow-ups, and crisis-related alerts. Administrative features include institution management, department management, user management, counsellor management, assessment configuration, community moderation, analytics access, audit logs, and role-based access control.
+
+The backend is designed as a modular system using FastAPI and PostgreSQL. Major modules include authentication, users, institutions, students, counsellors, appointments, chatbot conversations, messages, conversation memory, issue extraction, mood tracking, assessments, crisis alerts, peer support, notifications, analytics, and administration. The architecture is intended to be scalable, secure, privacy-conscious, and suitable for deployment across multiple educational institutions.

@@ -1,0 +1,105 @@
+FEATURES
+
+1.  AI Mental Health Companion
+
+-   User authentication
+-   Chat history
+-   Conversation titles
+-   Message streaming
+-   Emotion detection
+-   Issue extraction
+-   Long-term memory
+-   Conversation summarization
+-   Coping strategy suggestions
+-   Resource recommendations
+-   Follow-up questions
+-   Crisis detection
+-   AI feedback (thumbs up/down)
+
+2.  Counsellor Booking
+
+-   Institution-wise counsellors
+-   Counsellor profiles
+-   Availability schedule
+-   Appointment booking
+-   Reschedule
+-   Cancellation
+-   Session notes
+-   Student feedback
+-   Appointment history
+-   Status tracking
+
+3.  Anonymous Self Assessment
+
+-   PHQ-9 / GAD-7 / PSS / WHO-5
+-   Dynamic questions
+-   Scoring
+-   Severity classification
+-   Previous results
+-   Progress tracking
+-   AI interpretation
+-   Recommendation engine
+
+4.  Mood Tracking
+
+-   Daily mood check-ins
+-   Emoji/slider input
+-   Journal notes
+-   Mood history
+-   Weekly trends
+-   Monthly trends
+-   Mood reminders
+-   AI summaries
+
+5.  Crisis Detection
+
+-   Real-time risk detection
+-   Risk scoring
+-   Crisis alerts
+-   Emergency contact support
+-   Counsellor notification
+-   Resolution tracking
+
+6.  Anonymous Peer Communities
+
+-   Institution groups
+-   Topic groups
+-   Anonymous posting
+-   Anonymous comments
+-   Reactions
+-   Reporting
+-   AI moderation
+-   Peer mentors
+
+7.  Analytics Dashboard
+
+-   Overall wellness index
+-   Department-wise stress
+-   Mood trends
+-   Assessment statistics
+-   Common issues
+-   High-risk student count
+-   Counsellor workload
+-   Community engagement
+-   Reports
+
+8.  Notifications
+
+-   Mood reminders
+-   Appointment reminders
+-   Assessment reminders
+-   Follow-up reminders
+-   Crisis notifications
+-   In-app notifications
+
+9.  Administration
+
+-   Institution management
+-   User management
+-   Department management
+-   Counsellor management
+-   Assessment management
+-   Community moderation
+-   Analytics
+-   Audit logs
+-   RBAC

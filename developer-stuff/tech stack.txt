@@ -1,0 +1,30 @@
+TOOLS TO USE : 
+
+Frontend: 
+
+React + Vite 
+TypeScript 
+Tailwind CSS v4 
+shadcn/ui 
+TanStack Query 
+React Hook Form 
+Zod 
+Zustand
+
+Backend: 
+
+Express 
+Fastify
+.http files ( for testing ) 
+TypeScript  ( for type validation ) 
+Prisma ( for ORM ) 
+PostgreSQL ( for DB ) 
+JWT ( for authentication ) 
+Socket.IO ( for chat ) 
+Pino or wiston or Morgan ( for logging ) 
+
+
+ML : 
+
+Sentence transformers 
+Grok LLM provider
