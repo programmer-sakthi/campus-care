@@ -36,3 +36,10 @@ yarn-error.log*
 # Misc
 .DS_Store
 *.pem
+
+
+# ai context files 
+.agents
+.claude
+.windsurf
+skills-lock.json

@@ -1,3 +1,31 @@
 Day 1 : 
 
-- Mono repo setup
+- Project setup ( mono repo + prisma )
+- Counsellor booking  
+    - book Counsellor with a reason 
+    - Counsellor approves 
+    - After the appointment is over Counsellor gives an input about the student ( store it somewhere to feed the RAG model )
+    - student can give review about the session ( store it somewhere to summerize about the Counsellor , use the rating to store overall rating of the counsellor )
+
+Day 2 : 
+
+- Counsellor chat 
+
+    - store the whole chat as a file somewhere to feed the RAG model 
+
+Day 3 : 
+
+Day 4 : 
+
+Day 5 : 
+
+Day 6 :
+
+Day 7 : 
+
+Day 8 : 
+
+Day 9 : 
+
+Day 10 : 
+
