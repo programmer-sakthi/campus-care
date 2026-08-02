@@ -14,30 +14,36 @@ Day 2 :
     - After the appointment is over Counsellor gives an input about the student ( store it somewhere to feed the RAG model )
     - student can give review about the session ( store it somewhere to summerize about the Counsellor , use the rating to store overall rating of the counsellor )
 
+
+
+Day 3 : 
+
 - Counsellor chat 
     - use socket.io to implement chat 
     - store the whole chat as a file somewhere to feed the RAG model 
 
-Day 3 : 
-
-- Daily journal ( use the data for RAG  )
-- Periodical assesments ( use the assesment results for RAG data)
 
 Day 4 : 
 
-- Peer creation ( with admin approval )
-- Peer support 
+- Periodical assesments ( use the assesment results for RAG data)
 
 Day 5 : 
 
-- recovery mechanisms 
+- Daily journal ( use the data for RAG  )
+- Peer creation ( with admin approval )
 
 
 Day 6 :
 
+- Peer support module
+
 Day 7 : 
 
+- recovery mechanisms 
+
 Day 8 : 
+
+- admin insights
 
 Day 9 : 
 

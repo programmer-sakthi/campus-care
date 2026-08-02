@@ -1,0 +1,1 @@
+export { registerCounsellor } from "./counsellor-api";

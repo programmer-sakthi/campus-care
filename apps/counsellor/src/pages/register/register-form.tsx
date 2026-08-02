@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import React, { useRef, useState } from "react"
 import { cn } from "@repo/ui/lib/utils"
 import { Button } from "@repo/ui/components/button"
 import {
@@ -8,17 +8,40 @@ import {
   FieldLabel,
 } from "@repo/ui/components/field"
 import { Input } from "@repo/ui/components/input"
+import { registerCounsellor } from "./api"
 
 export function RegisterForm({
   className,
   ...props
 }: React.ComponentProps<"form">) {
-  
+  const [status, setStatus] = useState<"idle" | "saving" | "error">("idle")
+  const [error, setError] = useState<string | null>(null)
+  const formRef = useRef<HTMLFormElement>(null)
+
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    setStatus("saving")
+    setError(null)
+
+    const formData = new FormData(event.currentTarget)
+    const email = formData.get("email") as string
+    const name = (formData.get("name") as string) || undefined
+
+    try {
+      await registerCounsellor({ email, name })
+      setStatus("idle")
+      formRef.current?.reset()
+    } catch (err) {
+      setStatus("error")
+      setError(err instanceof Error ? err.message : "Something went wrong")
+    }
+  }
 
   return (
     <form
+      ref={formRef}
       className={cn("flex flex-col gap-6", className)}
-      
+      onSubmit={handleSubmit}
       {...props}
     >
       <FieldGroup>
@@ -36,10 +59,8 @@ export function RegisterForm({
             type="email"
             placeholder="m@example.com"
             required
-            
           />
         </Field>
-
 
         <Field>
           <div className="flex items-center">
@@ -49,7 +70,6 @@ export function RegisterForm({
             id="cousellor-name"
             name="name"
             required
-            
           />
         </Field>
 
@@ -59,7 +79,11 @@ export function RegisterForm({
           </Button>
         </Field>
 
-      
+        {error && (
+          <Field>
+            <p className="text-sm text-red-500">{error}</p>
+          </Field>
+        )}
 
         <Field>
           <FieldDescription className="text-center">
