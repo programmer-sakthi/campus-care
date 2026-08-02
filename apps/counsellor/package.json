@@ -1,10 +1,10 @@
 {
-  "name": "student",
+  "name": "counsellor",
   "version": "0.0.1",
   "type": "module",
   "private": true,
   "scripts": {
-    "dev": "vite --port 3000",
+    "dev": "vite --port 3002",
     "build": "tsc -b && vite build",
     "lint": "eslint",
     "format": "prettier --write \"**/*.{ts,tsx}\"",
