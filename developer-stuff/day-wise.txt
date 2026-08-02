@@ -1,6 +1,6 @@
 Day 1 : 
 
-- Project setup ( mono repo + prisma )
+- Project setup ( mono repo + prisma + shadcn ui )
 - Instution creation 
 - Counsellor creation 
 - Student creation

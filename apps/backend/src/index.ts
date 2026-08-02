@@ -1,12 +1,12 @@
-import express from "express";
-
-const app = express();
+import { app } from "./app";
+import logger from "./config/logger";
 
 
 app.listen(process.env.PORT, () => {
-  console.log(`Backend is running on port ${process.env.PORT}`);
+  logger.info(`Server running on port ${process.env.PORT}`);
 });
-  
+
+
 app.get("/", (req, res) => {
-  res.send("Booking Service is running!");
+  res.send("Backend Service is running!");
 });
