@@ -1,0 +1,10 @@
+### Create Institution
+
+POST http://localhost:8000/institutions
+Content-Type: application/json
+
+{
+  "code": "SKCET",
+  "email": "admin@skcet.ac.in",
+  "name": "Sri Krishna College of Engineering and Technology"
+}
