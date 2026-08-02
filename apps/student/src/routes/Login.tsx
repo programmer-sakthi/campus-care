@@ -23,8 +23,9 @@ const Login = () => {
       <div className="relative hidden bg-muted lg:block">
         <img
           src={loginBg}
+          
           alt="Login background"
-          className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.2] dark:grayscale"
+          className="absolute inset-0 h-full w-full object-contain dark:brightness-[0.2] dark:grayscale"
         />
       </div>
     </div>
