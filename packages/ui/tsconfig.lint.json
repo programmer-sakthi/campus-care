@@ -7,11 +7,8 @@
     "jsx": "react-jsx",
     "skipLibCheck": true,
     "strict": true,
-    "noEmit": true,
-    "paths": {
-      "@repo/ui/*": ["./src/*"]
-    }
+    "outDir": "dist"
   },
-  "include": ["."],
+  "include": ["src", "turbo"],
   "exclude": ["node_modules", "dist"]
 }
