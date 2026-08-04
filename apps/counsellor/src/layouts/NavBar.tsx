@@ -8,7 +8,8 @@ const links = [
 
 export default function AppLayout() {
   return (
-    <div className="relative min-h-screen">
+    <div className="min-h-screen bg-gradient-to-br from-neutral-50 via-white to-slate-100">
+      {/* Floating Header */}
       <header className="fixed inset-x-0 top-6 z-50 flex justify-center">
         <nav className="flex rounded-2xl bg-black/90 p-1 shadow-2xl backdrop-blur-md">
           {links.map((link) => (
@@ -30,7 +31,8 @@ export default function AppLayout() {
         </nav>
       </header>
 
-      <main className="min-h-screen">
+      {/* Header floats over this */}
+      <main className="relative min-h-screen">
         <Outlet />
       </main>
     </div>
