@@ -1,0 +1,10 @@
+POST http://localhost:8000/students
+Content-Type: application/json
+
+
+{
+  "regNo": "22IT001",
+  "name": "Sakthi",
+  "email": "sakthi@example.com",
+  "institutionCode": "SKCET"
+}

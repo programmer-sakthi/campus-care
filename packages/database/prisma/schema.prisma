@@ -18,6 +18,19 @@ model Institution {
   name          String?
 
   counsellors   InstitutionCounsellor[]
+  students      Student[]
+}
+
+model Student {
+  regNo             String        @id
+  name              String?
+  email             String?       @unique
+
+  institutionCode   String
+  institution        Institution   @relation(fields: [institutionCode], references: [code])
+
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
 }
 
 model Counsellor {

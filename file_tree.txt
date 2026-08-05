@@ -1,0 +1,293 @@
+campus-care
+├── apps
+│   ├── admin
+│   │   ├── public
+│   │   │   ├── favicon.svg
+│   │   │   └── icons.svg
+│   │   ├── src
+│   │   │   ├── layouts
+│   │   │   │   └── RootLayout.tsx
+│   │   │   ├── pages
+│   │   │   │   ├── login
+│   │   │   │   │   ├── asset
+│   │   │   │   │   │   └── login-bg.jpeg
+│   │   │   │   │   └── login-form.tsx
+│   │   │   │   └── register
+│   │   │   │       ├── asset
+│   │   │   │       │   └── register-bg.jpeg
+│   │   │   │       └── register-form.tsx
+│   │   │   ├── routes
+│   │   │   │   ├── Login.tsx
+│   │   │   │   ├── NotFound.tsx
+│   │   │   │   └── Register.tsx
+│   │   │   ├── App.tsx
+│   │   │   ├── main.tsx
+│   │   │   └── router.tsx
+│   │   ├── .env
+│   │   ├── .gitignore
+│   │   ├── components.json
+│   │   ├── eslint.config.js
+│   │   ├── index.html
+│   │   ├── package.json
+│   │   ├── README.md
+│   │   ├── tsconfig.app.json
+│   │   ├── tsconfig.json
+│   │   ├── tsconfig.node.json
+│   │   └── vite.config.ts
+│   ├── backend
+│   │   ├── src
+│   │   │   ├── common
+│   │   │   │   ├── errors
+│   │   │   │   │   └── AppError.ts
+│   │   │   │   └── middleware
+│   │   │   │       ├── error.middleware.ts
+│   │   │   │       ├── logger.ts
+│   │   │   │       └── validate.middleware.ts
+│   │   │   ├── config
+│   │   │   │   └── logger.ts
+│   │   │   ├── features
+│   │   │   │   ├── counsellor
+│   │   │   │   │   ├── counsellor.controller.ts
+│   │   │   │   │   ├── counsellor.repository.ts
+│   │   │   │   │   ├── counsellor.routes.ts
+│   │   │   │   │   ├── counsellor.schema.ts
+│   │   │   │   │   ├── counsellor.service.ts
+│   │   │   │   │   ├── counsellor.types.ts
+│   │   │   │   │   └── index.ts
+│   │   │   │   └── institution
+│   │   │   │       ├── index.ts
+│   │   │   │       ├── institution.controller.ts
+│   │   │   │       ├── institution.repository.ts
+│   │   │   │       ├── institution.routes.ts
+│   │   │   │       ├── institution.schema.ts
+│   │   │   │       ├── institution.service.ts
+│   │   │   │       └── institution.types.ts
+│   │   │   ├── routes
+│   │   │   │   └── routes.ts
+│   │   │   ├── app.ts
+│   │   │   └── index.ts
+│   │   ├── test
+│   │   │   ├── counsellor
+│   │   │   │   └── create.http
+│   │   │   └── insititution
+│   │   │       └── create.http
+│   │   ├── .env
+│   │   └── package.json
+│   ├── counsellor
+│   │   ├── public
+│   │   │   ├── favicon.svg
+│   │   │   └── icons.svg
+│   │   ├── src
+│   │   │   ├── layouts
+│   │   │   │   ├── NavBar.tsx
+│   │   │   │   └── RootLayout.tsx
+│   │   │   ├── pages
+│   │   │   │   ├── appointments
+│   │   │   │   │   ├── Appointments.tsx
+│   │   │   │   │   └── mock-data.ts
+│   │   │   │   ├── chat
+│   │   │   │   │   ├── Chat.tsx
+│   │   │   │   │   ├── mock-data.ts
+│   │   │   │   │   ├── types.ts
+│   │   │   │   │   └── utils.ts
+│   │   │   │   ├── institutions
+│   │   │   │   │   ├── components
+│   │   │   │   │   │   ├── InstitutionCard.tsx
+│   │   │   │   │   │   ├── InstitutionCodeBadge.tsx
+│   │   │   │   │   │   ├── InvitationCard.tsx
+│   │   │   │   │   │   └── LeaveInstitutionDialog.tsx
+│   │   │   │   │   ├── mockdata
+│   │   │   │   │   │   └── institutions.ts
+│   │   │   │   │   ├── types
+│   │   │   │   │   │   └── types.ts
+│   │   │   │   │   ├── utils
+│   │   │   │   │   │   └── format.ts
+│   │   │   │   │   └── Institutions.tsx
+│   │   │   │   ├── login
+│   │   │   │   │   ├── asset
+│   │   │   │   │   │   └── login-bg.jpeg
+│   │   │   │   │   └── login-form.tsx
+│   │   │   │   └── register
+│   │   │   │       ├── api
+│   │   │   │       │   ├── counsellor-api.ts
+│   │   │   │       │   └── index.ts
+│   │   │   │       ├── asset
+│   │   │   │       │   └── register-bg.jpeg
+│   │   │   │       └── register-form.tsx
+│   │   │   ├── routes
+│   │   │   │   ├── Login.tsx
+│   │   │   │   ├── NotFound.tsx
+│   │   │   │   └── Register.tsx
+│   │   │   ├── App.tsx
+│   │   │   ├── main.tsx
+│   │   │   └── router.tsx
+│   │   ├── .env
+│   │   ├── .gitignore
+│   │   ├── components.json
+│   │   ├── eslint.config.js
+│   │   ├── index.html
+│   │   ├── package.json
+│   │   ├── README.md
+│   │   ├── tsconfig.app.json
+│   │   ├── tsconfig.json
+│   │   ├── tsconfig.node.json
+│   │   └── vite.config.ts
+│   ├── peer
+│   │   ├── public
+│   │   │   ├── favicon.svg
+│   │   │   └── icons.svg
+│   │   ├── src
+│   │   │   ├── layouts
+│   │   │   │   └── RootLayout.tsx
+│   │   │   ├── pages
+│   │   │   │   ├── login
+│   │   │   │   │   ├── asset
+│   │   │   │   │   │   └── login-bg.jpeg
+│   │   │   │   │   └── login-form.tsx
+│   │   │   │   └── register
+│   │   │   ├── routes
+│   │   │   │   ├── Login.tsx
+│   │   │   │   ├── NotFound.tsx
+│   │   │   │   └── Register.tsx
+│   │   │   ├── App.tsx
+│   │   │   ├── main.tsx
+│   │   │   └── router.tsx
+│   │   ├── .env
+│   │   ├── .gitignore
+│   │   ├── components.json
+│   │   ├── eslint.config.js
+│   │   ├── index.html
+│   │   ├── package.json
+│   │   ├── README.md
+│   │   ├── tsconfig.app.json
+│   │   ├── tsconfig.json
+│   │   ├── tsconfig.node.json
+│   │   └── vite.config.ts
+│   └── student
+│       ├── public
+│       │   ├── favicon.svg
+│       │   └── icons.svg
+│       ├── src
+│       │   ├── layouts
+│       │   │   └── RootLayout.tsx
+│       │   ├── pages
+│       │   │   ├── login
+│       │   │   │   ├── asset
+│       │   │   │   │   └── login-bg.jpeg
+│       │   │   │   └── login-form.tsx
+│       │   │   └── register
+│       │   │       ├── asset
+│       │   │       │   └── register-bg.jpeg
+│       │   │       └── register-form.tsx
+│       │   ├── routes
+│       │   │   ├── Login.tsx
+│       │   │   ├── NotFound.tsx
+│       │   │   └── Register.tsx
+│       │   ├── App.tsx
+│       │   ├── main.tsx
+│       │   └── router.tsx
+│       ├── .env
+│       ├── .gitignore
+│       ├── components.json
+│       ├── eslint.config.js
+│       ├── index.html
+│       ├── package.json
+│       ├── README.md
+│       ├── tsconfig.app.json
+│       ├── tsconfig.json
+│       ├── tsconfig.node.json
+│       └── vite.config.ts
+├── developer-stuff
+│   ├── commands.txt
+│   ├── day-wise.txt
+│   ├── description.txt
+│   ├── features.txt
+│   ├── important-lessons.txt
+│   ├── journal.txt
+│   ├── ports.txt
+│   ├── task-wise-workflow.txt
+│   ├── tech stack.txt
+│   ├── terminologies.txt
+│   └── testing-credentials.txt
+├── packages
+│   ├── database
+│   │   ├── generated
+│   │   │   └── prisma
+│   │   │       ├── internal
+│   │   │       │   ├── class.ts
+│   │   │       │   ├── prismaNamespace.ts
+│   │   │       │   └── prismaNamespaceBrowser.ts
+│   │   │       ├── models
+│   │   │       │   ├── Counsellor.ts
+│   │   │       │   ├── Institution.ts
+│   │   │       │   └── InstitutionCounsellor.ts
+│   │   │       ├── browser.ts
+│   │   │       ├── client.ts
+│   │   │       ├── commonInputTypes.ts
+│   │   │       ├── enums.ts
+│   │   │       └── models.ts
+│   │   ├── prisma
+│   │   │   ├── migrations
+│   │   │   │   ├── 20260801080342_init
+│   │   │   │   │   └── migration.sql
+│   │   │   │   └── migration_lock.toml
+│   │   │   └── schema.prisma
+│   │   ├── src
+│   │   │   ├── client.ts
+│   │   │   └── index.ts
+│   │   ├── .env
+│   │   ├── .gitignore
+│   │   ├── package.json
+│   │   ├── prisma.config.ts
+│   │   └── skills-lock.json
+│   ├── eslint-config
+│   │   ├── base.js
+│   │   ├── next.js
+│   │   ├── package.json
+│   │   ├── react-internal.js
+│   │   └── README.md
+│   ├── typescript-config
+│   │   ├── base.json
+│   │   ├── nextjs.json
+│   │   ├── package.json
+│   │   └── react-library.json
+│   └── ui
+│       ├── public
+│       ├── src
+│       │   ├── components
+│       │   │   ├── avatar.tsx
+│       │   │   ├── badge.tsx
+│       │   │   ├── button-group.tsx
+│       │   │   ├── button.tsx
+│       │   │   ├── card.tsx
+│       │   │   ├── dialog.tsx
+│       │   │   ├── dropdown-menu.tsx
+│       │   │   ├── field.tsx
+│       │   │   ├── input.tsx
+│       │   │   ├── label.tsx
+│       │   │   ├── scroll-area.tsx
+│       │   │   ├── separator.tsx
+│       │   │   ├── tabs.tsx
+│       │   │   └── textarea.tsx
+│       │   ├── lib
+│       │   │   └── utils.ts
+│       │   ├── styles
+│       │   │   └── globals.css
+│       │   ├── button.tsx
+│       │   ├── card.tsx
+│       │   └── code.tsx
+│       ├── utils
+│       ├── components.json
+│       ├── eslint.config.mjs
+│       ├── package.json
+│       ├── tsconfig.json
+│       └── tsconfig.lint.json
+├── .gitignore
+├── .npmrc
+├── file_tree.py
+├── file_tree.txt
+├── package.json
+├── pnpm-lock.yaml
+├── pnpm-workspace.yaml
+├── README.md
+└── turbo.json

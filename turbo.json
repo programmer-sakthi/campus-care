@@ -7,7 +7,8 @@
     },
     "db:migrate": {
       "cache": false,
-      "persistent": true
+      "persistent": false,
+      "dependsOn": ["^db:generate"]
     },
     "db:deploy": {
       "cache": false
