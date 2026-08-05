@@ -13,42 +13,54 @@ datasource db {
 }
 
 model Institution {
-  code          String                     @id
-  email         String                     @unique
-  name          String?
+  code  String  @id
+  email String  @unique
+  name  String?
 
-  counsellors   InstitutionCounsellor[]
-  students      Student[]
+  counsellors InstitutionCounsellor[]
+  students    Student[]
 }
 
 model Student {
-  regNo             String        @id
-  name              String?
-  email             String?       @unique
+  regNo String  @id
+  name  String?
+  email String? @unique
 
-  institutionCode   String
-  institution        Institution   @relation(fields: [institutionCode], references: [code])
+  institutionCode String
+  institution     Institution @relation(fields: [institutionCode], references: [code])
 
-  createdAt         DateTime      @default(now())
-  updatedAt         DateTime      @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Counsellor {
-  email         String                     @id
-  name          String?
+  email String  @id
+  name  String?
 
-  institutions  InstitutionCounsellor[]
+  institutions InstitutionCounsellor[]
+}
+
+enum CounsellorInvitationStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  CANCELLED
+  LEFT
 }
 
 model InstitutionCounsellor {
-  institutionCode  String
-  counsellorEmail  String
+  institutionCode String
+  counsellorEmail String
+  status          CounsellorInvitationStatus @default(PENDING)
 
-  noOfSessions Int? @default(0)
+  noOfSessions Int @default(0)
+
+  invitedAt DateTime  @default(now())
+  joinedAt  DateTime?
+
   institution Institution @relation(fields: [institutionCode], references: [code])
-  counsellor Counsellor @relation(fields: [counsellorEmail], references: [email])
 
-  joinedAt DateTime @default(now())
+  counsellor Counsellor @relation(fields: [counsellorEmail], references: [email])
 
   @@id([institutionCode, counsellorEmail])
 }
