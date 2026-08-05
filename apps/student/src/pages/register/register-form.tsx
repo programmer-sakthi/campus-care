@@ -13,11 +13,65 @@ export function RegisterForm({
   className,
   ...props
 }: React.ComponentProps<"form">) {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setError(null);
+    setSuccess(null);
+    setLoading(true);
+
+    try {
+      const form = e.currentTarget;
+      const formData = new FormData(form);
+
+      const payload = {
+        email: formData.get("email") as string | null,
+        name: formData.get("name") as string | null,
+        institutionCode: formData.get("code") as string | null,
+        regNo: formData.get("register-number") as string | null,
+      } as Record<string, any>;
+
+      const apiBaseUrl = import.meta.env.VITE_API_URL;
+      const endpoint = new URL("/students", apiBaseUrl).toString();
+
+      const res = await fetch(endpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const contentType = res.headers.get("content-type") || "";
+      let data: any = null;
+
+      if (contentType.includes("application/json")) {
+        data = await res.json();
+      } else {
+        data = { message: await res.text() };
+      }
+
+      if (!res.ok) {
+        setError(data?.message || "Failed to register");
+      } else {
+        setSuccess(data?.message || "Registered successfully");
+        form.reset();
+      }
+    } catch (err: any) {
+      setError(err?.message || "Network error");
+    } finally {
+      setLoading(false);
+    }
+  };
 
 
   return (
     <form
       className={cn("flex flex-col gap-6", className)}
+      onSubmit={handleSubmit}
       {...props}
     >
       <FieldGroup>
@@ -80,8 +134,8 @@ export function RegisterForm({
         </Field>
 
         <Field>
-          <Button type="submit">
-            Register
+          <Button type="submit" disabled={loading}>
+            {loading ? "Registering..." : "Register"}
           </Button>
         </Field>
 
@@ -89,10 +143,18 @@ export function RegisterForm({
 
         <Field>
           <FieldDescription className="text-center">
-            Already have an account?{" "}
-            <a href="/login" className="underline underline-offset-4">
-              Log in
-            </a>
+            {error && (
+              <span className="block text-sm text-destructive">{error}</span>
+            )}
+            {success && (
+              <span className="block text-sm text-success">{success}</span>
+            )}
+            <span className="mt-2 block">
+              Already have an account?{" "}
+              <a href="/login" className="underline underline-offset-4">
+                Log in
+              </a>
+            </span>
           </FieldDescription>
         </Field>
       </FieldGroup>

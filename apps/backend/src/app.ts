@@ -4,9 +4,8 @@ import cors from "cors";
 import pinoHttp from "pino-http";
 
 import logger from "./config/logger";
-
 import router from "./routes/routes";
-
+import { errorHandler } from "./common/middleware/error.middleware";
 
 const app = express();
 app.use(cors());
@@ -19,5 +18,7 @@ app.use(
     logger,
   }),
 );
+
+app.use(errorHandler);
 
 export { app };
