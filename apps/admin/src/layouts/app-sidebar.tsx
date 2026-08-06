@@ -15,11 +15,11 @@ export function AppSidebar() {
     <Sidebar collapsible="icon">
       <SidebarHeader className="border-b">
         <div className="flex items-center gap-2 px-2 py-3">
-          <div className="flex size-8 items-center justify-center rounded-md bg-primary text-primary-foreground">
+          <div className="flex size-8 shrink-0 items-center justify-center rounded-md bg-primary text-primary-foreground">
             <Brain className="size-4" />
           </div>
 
-          <div className="flex flex-col">
+          <div className="flex flex-col group-data-[collapsible=icon]:hidden">
             <span className="font-semibold">Campus Care</span>
             <span className="text-xs text-muted-foreground">
               Admin Portal
