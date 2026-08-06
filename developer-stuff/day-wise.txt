@@ -7,10 +7,10 @@ Day 1 :
 
 Day 2 : 
 
-- Student creation 
-- Counsellor Invitation frontend ( Admin app and Counsellor app ) 
-- Counsellor booking frontend ( Student app and Counsellor app ) 
-- Counsellor-Student chat frontend ( Student app and Counsellor app ) 
+- Student creation ✅
+- Counsellor Invitation frontend ( Admin app and Counsellor app ) ✅ 
+- Counsellor booking frontend ( Student app and Counsellor app ) ✅ 
+- Counsellor-Student chat frontend ( Student app and Counsellor app ) ✅
 
 Day 3 : 
 

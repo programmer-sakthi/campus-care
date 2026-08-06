@@ -4,6 +4,8 @@ import RootLayout from "./layouts/RootLayout";
 import Login from "./routes/Login";
 import Register from "./routes/Register";
 import NotFound from "./routes/NotFound";
+import Booking from "./pages/book-appointment/Booking";
+import Chat from "./pages/book-appointment/Chat";
 
 export const router = createBrowserRouter([
   {
@@ -18,6 +20,14 @@ export const router = createBrowserRouter([
       {
         path: "register",
         Component: Register,
+      },
+      {
+        path: "book-appointment",
+        Component: Booking,
+      },
+      {
+        path: "chat",
+        Component: Chat,
       },
     ],
   },
