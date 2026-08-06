@@ -14,7 +14,7 @@ export function AppSidebar() {
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader className="border-b">
-        <div className="flex items-center gap-2 px-2 py-3">
+        <div className="flex items-center gap-2 px-2 py-3 group-data-[collapsible=icon]:justify-center">
           <div className="flex size-8 shrink-0 items-center justify-center rounded-md bg-primary text-primary-foreground">
             <Brain className="size-4" />
           </div>

@@ -1,15 +1,18 @@
-import { SidebarProvider, SidebarTrigger } from "@repo/ui/components/sidebar"
-import { AppSidebar } from "./app-sidebar"
-import { Outlet } from "react-router"
+import { Outlet } from "react-router";
+import { SidebarProvider, SidebarTrigger } from "@repo/ui/components/sidebar";
+import { AppSidebar } from "./app-sidebar";
 
-export default function Layout({ children }: { children: React.ReactNode }) {
+export default function Layout() {
   return (
     <SidebarProvider>
       <AppSidebar />
-      <main>
+
+      <main className="flex min-h-screen flex-1 flex-col">
         <SidebarTrigger />
-        <Outlet />
+        <div className="flex-1">
+          <Outlet />
+        </div>
       </main>
     </SidebarProvider>
-  )
+  );
 }
