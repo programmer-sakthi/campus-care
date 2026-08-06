@@ -6,3 +6,9 @@ export const createCounsellorSchema = z.object({
 });
 
 export type CreateCounsellorDto = z.infer<typeof createCounsellorSchema>;
+
+export const userContextSchema = z.object({
+  email: z.email(),
+});
+
+export type ListPendingDto = z.infer<typeof userContextSchema>;

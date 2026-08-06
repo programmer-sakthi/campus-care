@@ -11,3 +11,12 @@ export const createInstitutionSchema = z.object({
 export type CreateInstitutionDto = z.infer<
   typeof createInstitutionSchema
 >;
+
+export const counsellorInvitationSchema = z.object({
+  code: z.string().trim().min(1, "Institution code is required"),
+  email: z.email(),
+});
+
+export type CounsellorInvitationDto = z.infer<
+  typeof counsellorInvitationSchema
+>;
