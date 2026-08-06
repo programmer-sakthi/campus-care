@@ -21,11 +21,11 @@ Day 3 :
 
 Day 4 : 
 
-- Periodical assesments ( use the assesment results for RAG data)
+- Daily journal ( use the data for RAG  )
 
 Day 5 : 
 
-- Daily journal ( use the data for RAG  )
+- Periodical assesments ( use the assesment results for RAG data )
 - Peer creation ( with admin approval )
 
 
@@ -39,7 +39,7 @@ Day 7 :
 
 Day 8 : 
 
-- admin insights
+- admin insights 
 
 Day 9 : 
 
