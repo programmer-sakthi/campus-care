@@ -36,6 +36,7 @@ model Student {
 model Counsellor {
   email String  @id
   name  String?
+  createdAt DateTime @default(now())
 
   institutions InstitutionCounsellor[]
 }

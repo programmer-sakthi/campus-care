@@ -1,9 +1,6 @@
 export interface Counsellor {
-  id: string;
   name: string;
-  initials: string;
   email: string;
-  specialties: string[];
   joinedAt: string; // ISO
 }
 

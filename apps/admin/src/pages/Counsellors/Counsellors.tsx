@@ -7,8 +7,15 @@ import { PendingInviteItem } from "./components/Pendinginviteitem";
 import { RemoveCounsellorDialog } from "./components/Removecounsellordialog";
 import { initialCounsellors, initialInvites } from "./mockdata/counsellors";
 import type { Counsellor, Invite } from "./types";
+import { useQuery } from "@tanstack/react-query";
+import { trpc } from "../../lib/trpc";
 
 export default function Counsellors() {
+  
+  const { data: availableCounsellors } = useQuery(trpc.institution.availableCounsellors.queryOptions({
+    institutionCode: "SKCET"
+  }))
+
   const [counsellors, setCounsellors] = useState<Counsellor[]>(initialCounsellors);
   const [invites, setInvites] = useState<Invite[]>(initialInvites);
   const [removeTarget, setRemoveTarget] = useState<Counsellor | null>(null);
@@ -73,7 +80,7 @@ export default function Counsellors() {
 
         {/* ACTIVE */}
         <TabsContent value="active" className="mt-0">
-          {counsellors.length === 0 ? (
+          {availableCounsellors?.length === 0 ? (
             <EmptyState
               icon={<Users className="h-5 w-5" />}
               title="No active counsellors yet"
@@ -81,9 +88,9 @@ export default function Counsellors() {
             />
           ) : (
             <div className="flex flex-col gap-3">
-              {counsellors.map((counsellor) => (
+              {availableCounsellors?.map((counsellor) => (
                 <CounsellorListItem
-                  key={counsellor.id}
+                  key={counsellor.email}
                   counsellor={counsellor}
                   onRemove={setRemoveTarget}
                 />

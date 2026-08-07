@@ -2,8 +2,8 @@ import { Avatar, AvatarFallback } from "@repo/ui/components/avatar";
 import { Badge } from "@repo/ui/components/badge";
 import { Button } from "@repo/ui/components/button";
 import { Mail, UserMinus } from "lucide-react";
-import type { Counsellor } from "../types";
 import { formatJoinedDate } from "../utils/format";
+import type { Counsellor } from "@repo/database";
 
 const nameFont = { fontFamily: "'Fraunces', Georgia, serif" };
 
@@ -17,7 +17,7 @@ export function CounsellorListItem({ counsellor, onRemove }: CounsellorListItemP
     <div className="flex items-start gap-4 rounded-xl border border-neutral-200 bg-white px-4 py-3.5">
       <Avatar className="h-11 w-11 shrink-0">
         <AvatarFallback className="bg-[#EDF2EF] text-sm font-medium text-[#3F5A4E]">
-          {counsellor.initials}
+          {counsellor.name?.at(0)}
         </AvatarFallback>
       </Avatar>
 
@@ -32,20 +32,8 @@ export function CounsellorListItem({ counsellor, onRemove }: CounsellorListItemP
           </span>
         </div>
 
-        <div className="mt-2 flex flex-wrap gap-1.5">
-          {counsellor.specialties.map((s) => (
-            <Badge
-              key={s}
-              variant="outline"
-              className="border-neutral-200 font-normal text-neutral-600"
-            >
-              {s}
-            </Badge>
-          ))}
-        </div>
-
         <p className="mt-2 text-xs text-neutral-400">
-          Joined {formatJoinedDate(counsellor.joinedAt)}
+          Joined {formatJoinedDate(counsellor.createdAt)}
         </p>
       </div>
 

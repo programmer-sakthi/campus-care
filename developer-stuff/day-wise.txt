@@ -21,7 +21,7 @@ Day 3 :
 
 Day 4 : 
 
-- Daily journal ( use the data for RAG  )
+- Daily journal ( use the data for RAG )
 
 Day 5 : 
 
