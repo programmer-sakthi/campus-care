@@ -10,7 +10,6 @@ import Chat from "./pages/book-appointment/Chat";
 export const router = createBrowserRouter([
   {
     path: "/",
-    Component: RootLayout,
 
     children: [ 
       {
@@ -20,7 +19,14 @@ export const router = createBrowserRouter([
       {
         path: "register",
         Component: Register,
-      },
+      }
+    ],
+  },
+  {
+    path: "/",
+    Component: RootLayout,
+
+    children: [ 
       {
         path: "book-appointment",
         Component: Booking,
