@@ -7,11 +7,10 @@ export default function Layout() {
     <SidebarProvider>
       <AppSidebar />
 
-      <main className="flex min-h-screen flex-1 flex-col">
-        <SidebarTrigger />
-        <div className="flex-1">
-          <Outlet />
-        </div>
+      <main className="relative flex min-h-screen flex-1 flex-col overflow-x-hidden overflow-y-auto">
+        <SidebarTrigger className="absolute left-4 top-4 z-50" />
+
+        <Outlet />
       </main>
     </SidebarProvider>
   );

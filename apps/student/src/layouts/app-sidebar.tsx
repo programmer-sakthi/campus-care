@@ -22,7 +22,7 @@ export function AppSidebar() {
           <div className="flex flex-col group-data-[collapsible=icon]:hidden">
             <span className="font-semibold">Campus Care</span>
             <span className="text-xs text-muted-foreground">
-              Admin Portal
+              Student Portal
             </span>
           </div>
         </div>

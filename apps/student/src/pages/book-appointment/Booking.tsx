@@ -41,7 +41,7 @@ export default function Booking({ onOpenChat }: BookingProps) {
   }
 
   return (
-    <div className="mx-auto max-w-5xl px-4 pb-16 pt-28">
+    <div className="mx-auto max-w-5xl px-4 pb-16 pt-12">
       <div className="mb-6">
         <h1 className="text-2xl font-semibold tracking-tight text-neutral-900">
           Book a counsellor

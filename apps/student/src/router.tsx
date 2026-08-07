@@ -6,6 +6,9 @@ import Register from "./routes/Register";
 import NotFound from "./routes/NotFound";
 import Booking from "./pages/book-appointment/Booking";
 import Chat from "./pages/book-appointment/Chat";
+import ChatBot from "./pages/chatbot/ChatBot";
+import DailyCheckIn from "./pages/daily-check-in/DailyCheckIn";
+import EmotionalAudit from "./pages/emotional-audit/EmotionalAudit";
 
 export const router = createBrowserRouter([
   {
@@ -34,6 +37,18 @@ export const router = createBrowserRouter([
       {
         path: "chat",
         Component: Chat,
+      },
+      {
+        path: "emora",
+        Component: ChatBot,
+      },
+      {
+        path: "daily-checkin",
+        Component: DailyCheckIn,
+      },
+      {
+        path: "emotional-audit",
+        Component: EmotionalAudit,
       },
     ],
   },

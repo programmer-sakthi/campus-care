@@ -12,6 +12,8 @@ import { trpc } from "../../lib/trpc";
 
 export default function Counsellors() {
   
+  // TODO : CALL THE INSTITUTION STORED IN LOCAL STORAGE
+
   const { data: availableCounsellors } = useQuery(trpc.institution.availableCounsellors.queryOptions({
     institutionCode: "SKCET"
   }))

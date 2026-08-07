@@ -1,4 +1,4 @@
-import { MessageCircle , ClipboardClock } from "lucide-react";
+import { MessageCircle, ClipboardClock, BotMessageSquare, Heart, BookOpenCheck } from "lucide-react";
 import { NavLink } from "react-router";
 
 import {
@@ -10,7 +10,7 @@ import {
   SidebarMenuItem,
 } from "@repo/ui/components/sidebar";
 
-const items = [
+const counsellorItems = [
   {
     title: "Book Appointment",
     url: "/book-appointment",
@@ -23,28 +23,82 @@ const items = [
   },
 ];
 
+const aiCompanionItems = [
+  {
+    title: "Emora AI",
+    url: "/emora",
+    icon: BotMessageSquare,
+  }
+];
+
+const personalSpaceItems = [
+  {
+    title: "Daily Check in",
+    url: "/daily-checkin",
+    icon: BookOpenCheck,
+  },
+  {
+    title: "Emotional Audit",
+    url: "/emotional-audit",
+    icon: Heart,
+  },
+];
+
+const sections = [
+  {
+    label: "Talk to Counsellors",
+    items: counsellorItems,
+  },
+  {
+    label: "Your AI companion",
+    items: aiCompanionItems,
+  },
+  {
+    label: "Your personal space",
+    items: personalSpaceItems,
+  },
+];
+
 export function NavMain() {
   return (
-    <SidebarGroup>
-      <SidebarGroupLabel>Application</SidebarGroupLabel>
+    <>
+      {sections.map((section) => (
+        <SidebarGroup key={section.label}>
+          <SidebarGroupLabel>
+            {section.label}
+          </SidebarGroupLabel>
 
-      <SidebarGroupContent>
-        <SidebarMenu>
-          {items.map((item) => (
-            <SidebarMenuItem key={item.title}>
-            <NavLink
-              to={item.url}
-              className="flex items-center gap-2"
-            >
-                <SidebarMenuButton asChild tooltip={item.title}>
-                  <item.icon className="size-4" />
-                  <span>{item.title}</span>
-                </SidebarMenuButton>
-            </NavLink>
-              </SidebarMenuItem>
-          ))}
-        </SidebarMenu>
-      </SidebarGroupContent>
-    </SidebarGroup>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {section.items.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton
+                    asChild
+                    tooltip={item.title}
+                    className="p-0"
+                  >
+                    <NavLink
+                      to={item.url}
+                      className={({ isActive }) =>
+                        `
+        flex w-full items-center gap-2 rounded-md px-2 py-2
+        ${isActive
+                          ? "bg-muted text-primary"
+                          : "hover:bg-muted"
+                        }
+        `
+                      }
+                    >
+                      <item.icon className="size-4" />
+                      <span>{item.title}</span>
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+      ))}
+    </>
   );
 }

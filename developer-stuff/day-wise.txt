@@ -21,11 +21,11 @@ Day 3 :
 
 Day 4 : 
 
-- Daily journal ( use the data for RAG )
+- Daily journal
 
 Day 5 : 
 
-- Periodical assesments ( use the assesment results for RAG data )
+- Periodical assesments
 - Peer creation ( with admin approval )
 
 
@@ -35,17 +35,19 @@ Day 6 :
 
 Day 7 : 
 
-- recovery mechanisms 
+- chatbot
+ 
 
 Day 8 : 
 
+- authentication ( store details in local storage for now )
+
+
+
+
+PHRASE 2 : 
+
+- recovery mechanisms
 - admin insights 
-
-Day 9 : 
-
-- chatbot
-
-Day 10 : 
-
-- authentication
-
+- student insights 
+- Adding students performance data to the RAG

@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Building2, CalendarClock, Search, Send } from "lucide-react";
 import { Avatar, AvatarFallback } from "@repo/ui/components/avatar";
 import { Badge } from "@repo/ui/components/badge";
@@ -31,6 +31,7 @@ export default function Chat({ initialApplicationId }: ChatProps) {
   );
   const [query, setQuery] = useState("");
   const [draft, setDraft] = useState("");
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const rows = useMemo(() => {
     return applications
@@ -56,6 +57,10 @@ export default function Chat({ initialApplicationId }: ChatProps) {
     : undefined;
   const thread = selectedId ? conversations[selectedId] ?? [] : [];
 
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+  }, [thread.length, selectedId]);
+
   function handleSend() {
     const text = draft.trim();
     if (!text || !selectedId) return;
@@ -74,7 +79,7 @@ export default function Chat({ initialApplicationId }: ChatProps) {
 
   if (!selectedApplication || !selectedCounsellor) {
     return (
-      <div className="mx-auto flex h-screen max-w-6xl items-center justify-center px-4 pt-28 text-sm text-neutral-500">
+      <div className="mx-auto flex min-h-screen max-w-6xl items-center justify-center px-4 pt-28 text-sm text-neutral-500">
         You don't have any active conversations yet — request a session with a counsellor
         to start one.
       </div>
@@ -82,9 +87,9 @@ export default function Chat({ initialApplicationId }: ChatProps) {
   }
 
   return (
-    <div className="mx-auto flex h-screen max-w-6xl gap-0 px-4 pb-6 pt-28">
+    <div className="mx-auto flex min-h-screen w-full max-w-6xl gap-0 px-4 pb-6 pt-12">
       {/* Conversation list */}
-      <aside className="flex w-[320px] shrink-0 flex-col rounded-2xl border border-neutral-200 bg-white">
+      <aside className="flex min-h-0 w-[320px] shrink-0 flex-col rounded-2xl border border-neutral-200 bg-white">
         <div className="border-b border-neutral-200 p-4">
           <h1 className="text-lg font-semibold tracking-tight text-neutral-900">
             Conversations
@@ -117,7 +122,7 @@ export default function Chat({ initialApplicationId }: ChatProps) {
       </aside>
 
       {/* Thread */}
-      <section className="ml-4 flex flex-1 flex-col rounded-2xl border border-neutral-200 bg-white">
+      <section className="ml-4 flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-neutral-200 bg-white">
         <header className="flex items-center justify-between gap-4 border-b border-neutral-200 px-6 py-4">
           <div className="flex items-center gap-3">
             <Avatar className="h-10 w-10">
@@ -158,13 +163,14 @@ export default function Chat({ initialApplicationId }: ChatProps) {
           {selectedApplication.reason}
         </div>
 
-        <ScrollArea className="flex-1 px-6 py-5">
+        <div className="flex-1 min-h-0 overflow-y-auto px-6 py-5">
           <div className="flex flex-col gap-4">
             {thread.map((message) => (
               <MessageBubble key={message.id} message={message} />
             ))}
+            <div ref={messagesEndRef} />
           </div>
-        </ScrollArea>
+        </div>
 
         <div className="flex items-center gap-2 border-t border-neutral-200 p-4">
           <Input
