@@ -1,35 +1,102 @@
-import { useState, type ReactNode } from "react";
+import { useState, useMemo, type ReactNode } from "react";
 import { Inbox, School } from "lucide-react";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@repo/ui/components/tabs";
 import { InstitutionCard } from "./components/InstitutionCard";
 import { InvitationCard } from "./components/InvitationCard";
 import { LeaveInstitutionDialog } from "./components/LeaveInstitutionDialog";
-import { mockInvitations, mockMemberships } from "./mockdata/institutions";
+import { trpc, trpcClient } from "../../lib/trpc";
 import type { Institution, Invitation, Membership } from "./types/types";
 
 export default function Institutions() {
-  const [invitations, setInvitations] = useState<Invitation[]>(mockInvitations);
-  const [memberships, setMemberships] = useState<Membership[]>(mockMemberships);
+  const email = useMemo(() => {
+    if (typeof window === "undefined") {
+      return "sakthi@gmail.com";
+    }
+
+    return window.localStorage.getItem("email") ?? "sakthi@gmail.com";
+  }, []);
+
+  const pendingInvitationsQuery = useQuery(
+    trpc.counsellor.pendingInvitations.queryOptions({ email })
+  );
+
+  const joinedInstitutionsQuery = useQuery(
+    trpc.counsellor.joinedInstitutions.queryOptions({ email })
+  );
+
+  const acceptMutation = useMutation({
+    mutationFn: (institutionCode: string) =>
+      trpcClient.counsellor.acceptInvitation.mutate({
+        email,
+        institutionCode,
+      }),
+    onSuccess: () => {
+      pendingInvitationsQuery.refetch();
+      joinedInstitutionsQuery.refetch();
+    },
+  });
+
+  const rejectMutation = useMutation({
+    mutationFn: (institutionCode: string) =>
+      trpcClient.counsellor.rejectInvitation.mutate({
+        email,
+        institutionCode,
+      }),
+    onSuccess: () => {
+      pendingInvitationsQuery.refetch();
+    },
+  });
+
+  const leaveMutation = useMutation({
+    mutationFn: (institutionCode: string) =>
+      trpcClient.counsellor.leaveInstitution.mutate({
+        email,
+        institutionCode,
+      }),
+    onSuccess: () => {
+      joinedInstitutionsQuery.refetch();
+    },
+  });
+
   const [leaveTarget, setLeaveTarget] = useState<Institution | null>(null);
 
-  function handleAccept(invitation: Invitation) {
-    setInvitations((prev) => prev.filter((i) => i.id !== invitation.id));
-    setMemberships((prev) => [
-      ...prev,
-      {
-        institution: invitation.institution,
-        joinedAt: new Date().toISOString(),
-        activeApplications: 0,
+  const invitations = useMemo<Invitation[]>(() => {
+    if (!pendingInvitationsQuery.data) return [];
+    return pendingInvitationsQuery.data.map((item) => ({
+      id: `${item.institutionCode}-${item.counsellorEmail}`,
+      institution: {
+        id: item.institutionCode,
+        name: item.institution.name ?? "",
+        code: item.institutionCode,
       },
-    ]);
+      sentAt: typeof item.invitedAt === "string" ? item.invitedAt : item.invitedAt.toISOString(),
+    }));
+  }, [pendingInvitationsQuery.data]);
+
+  const memberships = useMemo<Membership[]>(() => {
+    if (!joinedInstitutionsQuery.data) return [];
+    return joinedInstitutionsQuery.data.map((item) => ({
+      institution: {
+        id: item.institutionCode,
+        name: item.institution.name ?? "",
+        code: item.institutionCode,
+      },
+      joinedAt: item.joinedAt ? (typeof item.joinedAt === "string" ? item.joinedAt : item.joinedAt.toISOString()) : new Date().toISOString(),
+      activeApplications: 0,
+    }));
+  }, [joinedInstitutionsQuery.data]);
+
+  function handleAccept(invitation: Invitation) {
+    acceptMutation.mutate(invitation.institution.code);
   }
 
   function handleReject(invitation: Invitation) {
-    setInvitations((prev) => prev.filter((i) => i.id !== invitation.id));
+    rejectMutation.mutate(invitation.institution.code);
   }
 
   function handleLeaveConfirm(institution: Institution) {
-    setMemberships((prev) => prev.filter((m) => m.institution.id !== institution.id));
+    leaveMutation.mutate(institution.code);
     setLeaveTarget(null);
   }
 

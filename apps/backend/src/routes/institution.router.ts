@@ -54,6 +54,41 @@ export const institutionRouter = router({
     )
     .mutation(async ({ input }) => {
       try {
+        const existing = await prisma.institutionCounsellor.findUnique({
+          where: {
+            institutionCode_counsellorEmail: {
+              institutionCode: input.code,
+              counsellorEmail: input.email,
+            },
+          },
+        });
+
+        if (existing) {
+          if (existing.status === "ACCEPTED") {
+            throw new AppError(400, "Counsellor is already a member of this institution.");
+          }
+
+          return await prisma.institutionCounsellor.update({
+            where: {
+              institutionCode_counsellorEmail: {
+                institutionCode: input.code,
+                counsellorEmail: input.email,
+              },
+            },
+            data: {
+              status: "PENDING",
+              invitedAt: new Date(),
+            },
+          });
+        }
+
+        // Ensure the counsellor exists to avoid foreign key constraint errors
+        await prisma.counsellor.upsert({
+          where: { email: input.email },
+          update: {},
+          create: { email: input.email },
+        });
+
         return await prisma.institutionCounsellor.create({
           data: {
             institutionCode: input.code,
