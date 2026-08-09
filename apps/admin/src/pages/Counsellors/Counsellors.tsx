@@ -1,52 +1,74 @@
-import { useState, type ReactNode } from "react";
+import { useMemo, useState, type ReactNode } from "react";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@repo/ui/components/tabs";
 import { Mail, Users } from "lucide-react";
 import { CounsellorListItem } from "./components/Counsellorlistitem";
 import { InviteCounsellorDialog } from "./components/InviteCounsellorDialog";
 import { PendingInviteItem } from "./components/Pendinginviteitem";
 import { RemoveCounsellorDialog } from "./components/Removecounsellordialog";
-import { initialCounsellors, initialInvites } from "./mockdata/counsellors";
+// import { initialCounsellors } from "./mockdata/counsellors";
 import type { Counsellor, Invite } from "./types";
-import { useQuery } from "@tanstack/react-query";
-import { trpc } from "../../lib/trpc";
+import { trpc, trpcClient } from "../../lib/trpc";
 
 export default function Counsellors() {
-  
-  // TODO : CALL THE INSTITUTION STORED IN LOCAL STORAGE
+  const institutionCode = useMemo(() => {
+    if (typeof window === "undefined") {
+      return "SKCET";
+    }
 
-  const { data: availableCounsellors } = useQuery(trpc.institution.availableCounsellors.queryOptions({
-    institutionCode: "SKCET"
-  }))
+    return window.localStorage.getItem("institutionCode") ?? "SKCET";
+  }, []);
 
-  const [counsellors, setCounsellors] = useState<Counsellor[]>(initialCounsellors);
-  const [invites, setInvites] = useState<Invite[]>(initialInvites);
+  const { data: availableCounsellors } = useQuery(
+    trpc.institution.availableCounsellors.queryOptions({ institutionCode })
+  );
+
+  const pendingInvitesQuery = useQuery(
+    trpc.institution.pendingCounsellors.queryOptions({ institutionCode })
+  );
+
+  const inviteMutation = useMutation({
+    mutationFn: (email: string) =>
+      trpcClient.institution.inviteCounsellor.mutate({
+        code: institutionCode,
+        email,
+      }),
+    onSuccess: () => {
+      pendingInvitesQuery.refetch();
+    },
+  });
+
+  const cancelInviteMutation = useMutation({
+    mutationFn: (email: string) =>
+      trpcClient.counsellor.rejectInvitation.mutate({
+        email,
+        institutionCode,
+      }),
+    onSuccess: () => {
+      pendingInvitesQuery.refetch();
+    },
+  });
+
+  const [counsellors, setCounsellors] = useState<Counsellor[]>([]);
   const [removeTarget, setRemoveTarget] = useState<Counsellor | null>(null);
+  const pendingInvites = pendingInvitesQuery.data ?? [];
 
   function handleInvite(email: string, note?: string) {
-    const alreadyInvited = invites.some((i) => i.email.toLowerCase() === email.toLowerCase());
-    const alreadyActive = counsellors.some(
-      (c) => c.email.toLowerCase() === email.toLowerCase()
-    );
-    if (alreadyInvited || alreadyActive) return;
-
-    setInvites((prev) => [
-      { id: `inv-${Date.now()}`, email, sentAt: new Date().toISOString(), note },
-      ...prev,
-    ]);
+    void note;
+    inviteMutation.mutate(email);
   }
 
   function handleResend(invite: Invite) {
-    setInvites((prev) =>
-      prev.map((i) => (i.id === invite.id ? { ...i, sentAt: new Date().toISOString() } : i))
-    );
+    void invite;
+    pendingInvitesQuery.refetch();
   }
 
   function handleCancel(invite: Invite) {
-    setInvites((prev) => prev.filter((i) => i.id !== invite.id));
+    cancelInviteMutation.mutate(invite.counsellorEmail);
   }
 
   function handleRemoveConfirm(counsellor: Counsellor) {
-    setCounsellors((prev) => prev.filter((c) => c.id !== counsellor.id));
+    setCounsellors((prev) => prev.filter((c) => c.email !== counsellor.email));
     setRemoveTarget(null);
   }
 
@@ -69,13 +91,13 @@ export default function Counsellors() {
           <TabsTrigger value="active">
             Active counsellors
             <span className="ml-1.5 rounded-full bg-neutral-200 px-1.5 py-0.5 font-mono text-[10px] text-neutral-600">
-              {counsellors.length}
+              {availableCounsellors?.length ?? 0}
             </span>
           </TabsTrigger>
           <TabsTrigger value="pending">
             Pending invites
             <span className="ml-1.5 rounded-full bg-neutral-200 px-1.5 py-0.5 font-mono text-[10px] text-neutral-600">
-              {invites.length}
+              {pendingInvites.length}
             </span>
           </TabsTrigger>
         </TabsList>
@@ -94,7 +116,13 @@ export default function Counsellors() {
                 <CounsellorListItem
                   key={counsellor.email}
                   counsellor={counsellor}
-                  onRemove={setRemoveTarget}
+                  onRemove={(selectedCounsellor) =>
+                    setRemoveTarget({
+                      email: selectedCounsellor.email,
+                      name: selectedCounsellor.name ?? "",
+                      joinedAt: selectedCounsellor.createdAt,
+                    })
+                  }
                 />
               ))}
             </div>
@@ -103,7 +131,7 @@ export default function Counsellors() {
 
         {/* PENDING */}
         <TabsContent value="pending" className="mt-0">
-          {invites.length === 0 ? (
+          {pendingInvites.length === 0 ? (
             <EmptyState
               icon={<Mail className="h-5 w-5" />}
               title="No pending invites"
@@ -111,9 +139,9 @@ export default function Counsellors() {
             />
           ) : (
             <div className="flex flex-col gap-3">
-              {invites.map((invite) => (
+              {pendingInvites.map((invite) => (
                 <PendingInviteItem
-                  key={invite.id}
+                  key={invite.counsellorEmail}
                   invite={invite}
                   onResend={handleResend}
                   onCancel={handleCancel}

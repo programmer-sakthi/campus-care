@@ -5,8 +5,11 @@ export interface Counsellor {
 }
 
 export interface Invite {
-  id: string;
-  email: string;
-  sentAt: string; // ISO
-  note?: string;
+  counsellorEmail: string;
+  invitedAt: string; // ISO
+  counsellor: {
+    email: string;
+    name?: string | null;
+    createdAt: string;
+  };
 }

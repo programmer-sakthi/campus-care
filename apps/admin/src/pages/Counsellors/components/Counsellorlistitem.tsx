@@ -1,15 +1,21 @@
 import { Avatar, AvatarFallback } from "@repo/ui/components/avatar";
-import { Badge } from "@repo/ui/components/badge";
 import { Button } from "@repo/ui/components/button";
 import { Mail, UserMinus } from "lucide-react";
 import { formatJoinedDate } from "../utils/format";
-import type { Counsellor } from "@repo/database";
 
 const nameFont = { fontFamily: "'Fraunces', Georgia, serif" };
 
 interface CounsellorListItemProps {
-  counsellor: Counsellor;
-  onRemove: (counsellor: Counsellor) => void;
+  counsellor: {
+    email: string;
+    name: string | null;
+    createdAt: string;
+  };
+  onRemove: (counsellor: {
+    email: string;
+    name: string | null;
+    createdAt: string;
+  }) => void;
 }
 
 export function CounsellorListItem({ counsellor, onRemove }: CounsellorListItemProps) {

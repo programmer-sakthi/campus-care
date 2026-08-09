@@ -89,8 +89,9 @@ export const institutionRouter = router({
       return prisma.counsellor.findMany({
         where: {
           institutions: {
-            none: {
+            some: {
               institutionCode: input.institutionCode,
+              status: $Enums.CounsellorInvitationStatus.ACCEPTED
             },
           },
         },

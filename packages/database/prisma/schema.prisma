@@ -28,6 +28,7 @@ model Student {
 
   institutionCode String
   institution     Institution @relation(fields: [institutionCode], references: [code])
+  dailyCheckIns DailyCheckIn[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -64,4 +65,93 @@ model InstitutionCounsellor {
   counsellor Counsellor @relation(fields: [counsellorEmail], references: [email])
 
   @@id([institutionCode, counsellorEmail])
+}
+
+enum MoodTime {
+  MORNING
+  EVENING
+  NIGHT
+}
+
+enum Mood {
+  VERY_BAD
+  BAD
+  NEUTRAL
+  GOOD
+  VERY_GOOD
+}
+
+
+
+model DailyCheckIn {
+  id        String   @id @default(cuid())
+
+  // Student who completed this check-in
+  studentRegNo String
+  student Student @relation( fields: [studentRegNo] , references: [regNo], onDelete: Cascade )
+
+  // Calendar date this check-in belongs to
+  date      DateTime @db.Date
+
+  // Optional free-text note
+  note      String? @db.Text
+
+  // Final calculated mental-health score
+  mentalHealthScore    Int?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  moods     MoodEntry[]
+  responses QuestionResponse[]
+
+  // One check-in per student per day
+  @@unique([studentRegNo, date])
+  @@index([studentRegNo, date])
+}
+
+
+model MoodEntry {
+  id String @id @default(cuid())
+
+  dailyCheckInId String
+  dailyCheckIn   DailyCheckIn @relation( fields: [dailyCheckInId], references: [id], onDelete: Cascade )
+
+  time MoodTime
+  mood Mood
+
+  createdAt DateTime @default(now())
+
+  @@unique([dailyCheckInId, time])
+  @@index([dailyCheckInId])
+}
+
+model CheckInQuestion {
+  id String @id @default(cuid())
+
+  question String
+  active   Boolean @default(true)
+
+  responses QuestionResponse[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model QuestionResponse {
+  id String @id @default(cuid())
+
+  dailyCheckInId String
+  dailyCheckIn   DailyCheckIn @relation(fields: [dailyCheckInId],references: [id],onDelete: Cascade)
+
+  questionId String
+  question   CheckInQuestion @relation( fields: [questionId], references: [id])
+
+  answer String @db.Text
+
+  createdAt DateTime @default(now())
+
+  // A question can only be answered once per check-in
+  @@unique([dailyCheckInId, questionId])
+  @@index([dailyCheckInId])
 }

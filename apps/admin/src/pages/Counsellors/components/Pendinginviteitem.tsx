@@ -10,6 +10,9 @@ interface PendingInviteItemProps {
 }
 
 export function PendingInviteItem({ invite, onResend, onCancel }: PendingInviteItemProps) {
+  const email = invite.counsellor?.email ?? invite.counsellorEmail;
+  const name = invite.counsellor?.name ?? email;
+
   return (
     <div className="flex items-start gap-4 rounded-xl border border-dashed border-neutral-200 bg-white px-4 py-3.5">
       <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-neutral-100 text-neutral-400">
@@ -17,15 +20,11 @@ export function PendingInviteItem({ invite, onResend, onCancel }: PendingInviteI
       </div>
 
       <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-medium text-neutral-900">{invite.email}</p>
+        <p className="truncate text-sm font-medium text-neutral-900">{name}</p>
         <p className="mt-0.5 font-mono text-[11px] text-neutral-400">
-          Invited {timeAgo(invite.sentAt)}
+          Invited {timeAgo(invite.invitedAt)}
         </p>
-        {invite.note && (
-          <p className="mt-2 rounded-lg border-l-2 border-neutral-200 bg-neutral-50 px-3 py-2 text-sm leading-relaxed text-neutral-600">
-            {invite.note}
-          </p>
-        )}
+        <p className="mt-2 text-xs text-neutral-400">{email}</p>
       </div>
 
       <div className="flex shrink-0 gap-2">

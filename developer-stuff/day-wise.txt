@@ -26,28 +26,23 @@ Day 4 :
 Day 5 : 
 
 - Periodical assesments
-- Peer creation ( with admin approval )
-
 
 Day 6 :
 
-- Peer support module
+- authentication ( store details in local storage for now )
 
 Day 7 : 
 
 - chatbot
- 
 
-Day 8 : 
-
-- authentication ( store details in local storage for now )
 
 
 
 
 PHRASE 2 : 
 
-- recovery mechanisms
+- crisis detection
 - admin insights 
 - student insights 
 - Adding students performance data to the RAG
+- peer support module
