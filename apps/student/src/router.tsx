@@ -9,12 +9,13 @@ import Chat from "./pages/book-appointment/Chat";
 import ChatBot from "./pages/chatbot/ChatBot";
 import DailyCheckIn from "./pages/daily-check-in/DailyCheckIn";
 import EmotionalAudit from "./pages/emotional-audit/EmotionalAudit";
+import PeerSupport from "./pages/peer-support/PeerSupport";
 
 export const router = createBrowserRouter([
   {
     path: "/",
 
-    children: [ 
+    children: [
       {
         path: "login",
         Component: Login,
@@ -22,14 +23,14 @@ export const router = createBrowserRouter([
       {
         path: "register",
         Component: Register,
-      }
+      },
     ],
   },
   {
     path: "/",
     Component: RootLayout,
 
-    children: [ 
+    children: [
       {
         path: "book-appointment",
         Component: Booking,
@@ -49,6 +50,14 @@ export const router = createBrowserRouter([
       {
         path: "emotional-audit",
         Component: EmotionalAudit,
+      },
+      {
+        path: "peer-support",
+        Component: PeerSupport,
+      },
+      {
+        path: "peer-support/post/:postId",
+        Component: PeerSupport,
       },
     ],
   },

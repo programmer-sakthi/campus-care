@@ -1,4 +1,4 @@
-import { MessageCircle, ClipboardClock, BotMessageSquare, Heart, BookOpenCheck } from "lucide-react";
+import { MessageCircle, ClipboardClock, BotMessageSquare, Heart, BookOpenCheck, UsersRound } from "lucide-react";
 import { NavLink } from "react-router";
 
 import {
@@ -41,6 +41,11 @@ const personalSpaceItems = [
     title: "Emotional Audit",
     url: "/emotional-audit",
     icon: Heart,
+  },
+  {
+    title: "Peer Support Forum",
+    url: "/peer-support",
+    icon: UsersRound,
   },
 ];
 
