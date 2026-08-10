@@ -5,7 +5,10 @@ import { AppError } from "../common/errors/AppError";
 import { appErrorToTRPC, publicProcedure, router } from "../trpc";
 
 function normalizeCounsellorError(error: unknown): unknown {
-  if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+  if (
+    error instanceof Prisma.PrismaClientKnownRequestError &&
+    error.code === "P2002"
+  ) {
     return new AppError(409, "A counsellor with this email already exists.");
   }
 
@@ -18,7 +21,7 @@ export const counsellorRouter = router({
       z.object({
         email: z.string().email(),
         name: z.string().trim().min(1).optional(),
-      })
+      }),
     )
     .mutation(async ({ input }) => {
       try {
@@ -37,7 +40,7 @@ export const counsellorRouter = router({
     .input(
       z.object({
         email: z.string().email(),
-      })
+      }),
     )
     .query(async ({ input }) => {
       return prisma.institutionCounsellor.findMany({
@@ -58,7 +61,7 @@ export const counsellorRouter = router({
     .input(
       z.object({
         email: z.string().email(),
-      })
+      }),
     )
     .query(async ({ input }) => {
       return prisma.institutionCounsellor.findMany({
@@ -80,7 +83,7 @@ export const counsellorRouter = router({
       z.object({
         email: z.string().trim().email(),
         institutionCode: z.string().trim().min(1),
-      })
+      }),
     )
     .mutation(async ({ input }) => {
       try {
@@ -98,7 +101,10 @@ export const counsellorRouter = router({
         }
 
         if (membership.status !== "ACCEPTED") {
-          throw new AppError(400, "Counsellor is not currently a member of this institution.");
+          throw new AppError(
+            400,
+            "Counsellor is not currently a member of this institution.",
+          );
         }
 
         return prisma.institutionCounsellor.update({
@@ -122,7 +128,7 @@ export const counsellorRouter = router({
       z.object({
         email: z.string().trim().email(),
         institutionCode: z.string().trim().min(1),
-      })
+      }),
     )
     .mutation(async ({ input }) => {
       try {
@@ -140,7 +146,10 @@ export const counsellorRouter = router({
         }
 
         if (invitation.status !== "PENDING") {
-          throw new AppError(400, "Only pending invitations can be accepted or rejected.");
+          throw new AppError(
+            400,
+            "Only pending invitations can be accepted or rejected.",
+          );
         }
 
         return prisma.institutionCounsellor.update({
@@ -168,7 +177,7 @@ export const counsellorRouter = router({
       z.object({
         email: z.string().trim().email(),
         institutionCode: z.string().trim().min(1),
-      })
+      }),
     )
     .mutation(async ({ input }) => {
       try {
@@ -186,7 +195,10 @@ export const counsellorRouter = router({
         }
 
         if (invitation.status !== "PENDING") {
-          throw new AppError(400, "Only pending invitations can be accepted or rejected.");
+          throw new AppError(
+            400,
+            "Only pending invitations can be accepted or rejected.",
+          );
         }
 
         return prisma.institutionCounsellor.update({
@@ -207,5 +219,173 @@ export const counsellorRouter = router({
       } catch (error) {
         return appErrorToTRPC(error);
       }
+    }),
+
+  // Counsellor sees pending requests
+  appointmentRequests: publicProcedure
+    .input(
+      z.object({
+        counsellorEmail: z.string().email(),
+      }),
+    )
+    .query(async ({ input }) => {
+      return prisma.appointment.findMany({
+        where: {
+          counsellorEmail: input.counsellorEmail,
+          status: "PENDING",
+        },
+        include: {
+          student: true,
+        },
+        orderBy: {
+          requestedAt: "asc",
+        },
+      });
+    }),
+
+  // Counsellor approves and schedules
+  approveAppointment: publicProcedure
+    .input(
+      z.object({
+        appointmentId: z.string(),
+
+        counsellorEmail: z.string().email(),
+
+        scheduledAt: z.date(),
+
+        durationMinutes: z.number().min(15).max(120).default(30),
+      }),
+    )
+    .mutation(async ({ input }) => {
+      const appointment = await prisma.appointment.findFirst({
+        where: {
+          id: input.appointmentId,
+          counsellorEmail: input.counsellorEmail,
+          status: "PENDING",
+        },
+      });
+
+      if (!appointment) {
+        throw new Error("Appointment request not found");
+      }
+
+      return prisma.appointment.update({
+        where: {
+          id: input.appointmentId,
+        },
+
+        data: {
+          status: "APPROVED",
+
+          scheduledAt: input.scheduledAt,
+
+          durationMinutes: input.durationMinutes,
+
+          approvedAt: new Date(),
+        },
+      });
+    }),
+
+  // Counsellor rejects appointment
+  rejectAppointment: publicProcedure
+    .input(
+      z.object({
+        appointmentId: z.string(),
+
+        counsellorEmail: z.string().email(),
+
+        rejectionReason: z.string().min(5).optional(),
+      }),
+    )
+    .mutation(async ({ input }) => {
+      const appointment = await prisma.appointment.findFirst({
+        where: {
+          id: input.appointmentId,
+          counsellorEmail: input.counsellorEmail,
+          status: "PENDING",
+        },
+      });
+
+      if (!appointment) {
+        throw new Error("Appointment request not found");
+      }
+
+      return prisma.appointment.update({
+        where: {
+          id: input.appointmentId,
+        },
+
+        data: {
+          status: "REJECTED",
+
+          rejectionReason: input.rejectionReason,
+        },
+      });
+    }),
+
+  // Counsellor views approved appointments
+  scheduledAppointments: publicProcedure
+    .input(
+      z.object({
+        counsellorEmail: z.string().email(),
+      }),
+    )
+    .query(async ({ input }) => {
+      return prisma.appointment.findMany({
+        where: {
+          counsellorEmail: input.counsellorEmail,
+
+          status: "APPROVED",
+        },
+
+        include: {
+          student: true,
+        },
+
+        orderBy: {
+          scheduledAt: "asc",
+        },
+      });
+    }),
+
+  // Complete session
+  completeAppointment: publicProcedure
+    .input(
+      z.object({
+        appointmentId: z.string(),
+
+        counsellorEmail: z.string().email(),
+
+        sessionNote: z.string().min(5),
+      }),
+    )
+    .mutation(async ({ input }) => {
+      const appointment = await prisma.appointment.findFirst({
+        where: {
+          id: input.appointmentId,
+
+          counsellorEmail: input.counsellorEmail,
+
+          status: "APPROVED",
+        },
+      });
+
+      if (!appointment) {
+        throw new Error("Appointment not found");
+      }
+
+      return prisma.appointment.update({
+        where: {
+          id: input.appointmentId,
+        },
+
+        data: {
+          status: "COMPLETED",
+
+          sessionNote: input.sessionNote,
+
+          completedAt: new Date(),
+        },
+      });
     }),
 });

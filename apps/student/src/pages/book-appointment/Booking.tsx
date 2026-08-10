@@ -2,21 +2,22 @@ import { useMemo, useState } from "react";
 import { ApplicationStatusBadge } from "./components/ApplicationStatusBadge";
 import { BookingDialog } from "./components/BookingDialog";
 import { CounsellorCard } from "./components/CounsellorCard";
-import { initialApplications } from "./mockdata/applications";
 import { formatDateTime, timeAgo } from "./utils/format";
-import type { Application, Counsellor } from "./types";
-import { useQuery } from "@tanstack/react-query";
+import type { Application, ApplicationStatus } from "./types";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { trpc } from "@/lib/trpc";
 
 interface BookingProps {
   onOpenChat?: (applicationId: string) => void;
 }
 
-export default function Booking({ onOpenChat }: BookingProps) {
-  const [applications, setApplications] =
-    useState<Application[]>(initialApplications);
+interface DBCounsellor {
+  email: string;
+  name: string | null;
+}
 
-  const [bookingTarget, setBookingTarget] = useState<Counsellor | null>(null);
+export default function Booking({ onOpenChat }: BookingProps) {
+  const [bookingTarget, setBookingTarget] = useState<DBCounsellor | null>(null);
 
   const regNo = useMemo(() => {
     if (typeof window === "undefined") {
@@ -42,6 +43,38 @@ export default function Booking({ onOpenChat }: BookingProps) {
       enabled: !!institution?.code,
     });
 
+  // Get student's appointments
+  const { data: appointments, refetch: refetchAppointments } = useQuery(
+    trpc.student.myAppointments.queryOptions({
+      studentRegNo: regNo,
+    }),
+  );
+
+  // Map backend appointments to frontend applications
+  const applications = useMemo<Application[]>(() => {
+    if (!appointments) return [];
+    return appointments.map((appointment) => {
+      let status: ApplicationStatus = "pending";
+      if (appointment.status === "APPROVED") {
+        status = "scheduled";
+      } else if (appointment.status === "COMPLETED") {
+        status = "completed";
+      }
+      return {
+        id: appointment.id,
+        counsellorId: appointment.counsellorEmail,
+        reason: appointment.reason,
+        status,
+        requestedAt: appointment.requestedAt
+          ? new Date(appointment.requestedAt).toISOString()
+          : new Date().toISOString(),
+        scheduledAt: appointment.scheduledAt
+          ? new Date(appointment.scheduledAt).toISOString()
+          : undefined,
+      };
+    });
+  }, [appointments]);
+
   const applicationByCounsellor = useMemo(() => {
     const map = new Map<string, Application>();
 
@@ -52,17 +85,21 @@ export default function Booking({ onOpenChat }: BookingProps) {
     return map;
   }, [applications]);
 
-  function handleSubmitRequest(counsellor: Counsellor, reason: string) {
-    const application: Application = {
-      id: `app-${Date.now()}`,
-      counsellorId: counsellor.id,
-      reason,
-      status: "pending",
-      requestedAt: new Date().toISOString(),
-    };
+  const createAppointment = useMutation(
+    trpc.student.createAppointment.mutationOptions({
+      onSuccess: () => {
+        refetchAppointments();
+        setBookingTarget(null);
+      },
+    }),
+  );
 
-    setApplications((prev) => [...prev, application]);
-    setBookingTarget(null);
+  function handleSubmitRequest(counsellor: DBCounsellor, reason: string) {
+    createAppointment.mutate({
+      studentRegNo: regNo,
+      counsellorEmail: counsellor.email,
+      reason,
+    });
   }
 
   function handleOpenChat(application: Application) {
@@ -90,7 +127,7 @@ export default function Booking({ onOpenChat }: BookingProps) {
           <div className="flex flex-col gap-2">
             {applications.map((application) => {
               const counsellor = availableCounsellors?.find(
-                (c) => c.id === application.counsellorId,
+                (c) => c.email === application.counsellorId,
               );
 
               // Don't render applications whose counsellor
@@ -141,12 +178,12 @@ export default function Booking({ onOpenChat }: BookingProps) {
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             {availableCounsellors?.map((counsellor) => {
               const existingApplication = applicationByCounsellor.get(
-                counsellor.id,
+                counsellor.email,
               );
 
               return (
                 <CounsellorCard
-                  key={counsellor.id}
+                  key={counsellor.email}
                   counsellor={counsellor}
                   existingApplication={existingApplication}
                   onRequest={() => setBookingTarget(counsellor)}

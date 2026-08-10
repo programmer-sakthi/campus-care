@@ -7,18 +7,11 @@ import {
 } from "@repo/ui/components/card";
 import { MessageSquare, Send } from "lucide-react";
 
-interface Counsellor {
-  id: string;
-  name: string;
-  email: string;
-}
+import type { Application } from "../types";
 
-interface Application {
-  id: string;
-  counsellorId: string;
-  reason: string;
-  status: string;
-  requestedAt: string;
+interface Counsellor {
+  name: string | null;
+  email: string;
 }
 
 interface CounsellorCardProps {

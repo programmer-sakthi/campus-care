@@ -10,7 +10,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@repo/ui/components/dialog";
-import type { Counsellor } from "../types";
+interface Counsellor {
+  name: string | null;
+  email: string;
+}
 
 const nameFont = { fontFamily: "'Fraunces', Georgia, serif" };
 
@@ -20,7 +23,11 @@ interface BookingDialogProps {
   onSubmit: (counsellor: Counsellor, reason: string) => void;
 }
 
-export function BookingDialog({ counsellor, onOpenChange, onSubmit }: BookingDialogProps) {
+export function BookingDialog({
+  counsellor,
+  onOpenChange,
+  onSubmit,
+}: BookingDialogProps) {
   const [reason, setReason] = useState("");
 
   function handleSubmit() {
@@ -43,8 +50,9 @@ export function BookingDialog({ counsellor, onOpenChange, onSubmit }: BookingDia
             {counsellor && `Request a session with ${counsellor.name}`}
           </DialogTitle>
           <DialogDescription>
-            Share a little about what's going on. {counsellor?.name.split(" ")[1] ?? "They"} will
-            read this and reach out over chat to fix a time.
+            Share a little about what's going on.{" "}
+            {counsellor?.name?.split(" ")[1] ?? "They"} will read this and reach
+            out over chat to fix a time.
           </DialogDescription>
         </DialogHeader>
 

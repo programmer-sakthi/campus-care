@@ -120,4 +120,75 @@ export const studentRouter = router({
         return appErrorToTRPC(error);
       }
     }),
+
+  // Student books appointment
+  createAppointment: publicProcedure
+    .input(
+      z.object({
+        studentRegNo: z.string(),
+        counsellorEmail: z.string().email(),
+        reason: z.string().min(5),
+      }),
+    )
+    .mutation(async ({ input }) => {
+      return prisma.appointment.create({
+        data: {
+          studentRegNo: input.studentRegNo,
+          counsellorEmail: input.counsellorEmail,
+          reason: input.reason,
+        },
+      });
+    }),
+
+  // Student views their appointments
+  myAppointments: publicProcedure
+    .input(
+      z.object({
+        studentRegNo: z.string(),
+      }),
+    )
+    .query(async ({ input }) => {
+      return prisma.appointment.findMany({
+        where: {
+          studentRegNo: input.studentRegNo,
+        },
+        include: {
+          counsellor: true,
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+      });
+    }),
+
+  // Student cancels appointment
+  cancelAppointment: publicProcedure
+    .input(
+      z.object({
+        appointmentId: z.string(),
+        studentRegNo: z.string(),
+      }),
+    )
+    .mutation(async ({ input }) => {
+      const appointment = await prisma.appointment.findFirst({
+        where: {
+          id: input.appointmentId,
+          studentRegNo: input.studentRegNo,
+          status: "PENDING",
+        },
+      });
+
+      if (!appointment) {
+        throw new Error("Appointment cannot be cancelled");
+      }
+
+      return prisma.appointment.update({
+        where: {
+          id: input.appointmentId,
+        },
+        data: {
+          status: "CANCELLED",
+        },
+      });
+    }),
 });

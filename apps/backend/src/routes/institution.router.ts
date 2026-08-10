@@ -5,7 +5,10 @@ import { AppError } from "../common/errors/AppError";
 import { appErrorToTRPC, publicProcedure, router } from "../trpc";
 
 function normalizePrismaError(error: unknown): unknown {
-  if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+  if (
+    error instanceof Prisma.PrismaClientKnownRequestError &&
+    error.code === "P2002"
+  ) {
     const fields = Array.isArray(error.meta?.target) ? error.meta.target : [];
 
     if (fields.includes("code")) {
@@ -29,7 +32,7 @@ export const institutionRouter = router({
         code: z.string().trim().min(1, "Institution code is required"),
         email: z.string().email(),
         name: z.string().trim().optional(),
-      })
+      }),
     )
     .mutation(async ({ input }) => {
       try {
@@ -50,7 +53,7 @@ export const institutionRouter = router({
       z.object({
         code: z.string().trim().min(1, "Institution code is required"),
         email: z.string().email(),
-      })
+      }),
     )
     .mutation(async ({ input }) => {
       try {
@@ -65,7 +68,10 @@ export const institutionRouter = router({
 
         if (existing) {
           if (existing.status === "ACCEPTED") {
-            throw new AppError(400, "Counsellor is already a member of this institution.");
+            throw new AppError(
+              400,
+              "Counsellor is already a member of this institution.",
+            );
           }
 
           return await prisma.institutionCounsellor.update({
@@ -126,7 +132,7 @@ export const institutionRouter = router({
           institutions: {
             some: {
               institutionCode: input.institutionCode,
-              status: $Enums.CounsellorInvitationStatus.ACCEPTED
+              status: $Enums.CounsellorInvitationStatus.ACCEPTED,
             },
           },
         },
