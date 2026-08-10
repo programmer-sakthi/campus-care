@@ -6,7 +6,6 @@ import { CounsellorListItem } from "./components/Counsellorlistitem";
 import { InviteCounsellorDialog } from "./components/InviteCounsellorDialog";
 import { PendingInviteItem } from "./components/Pendinginviteitem";
 import { RemoveCounsellorDialog } from "./components/Removecounsellordialog";
-// import { initialCounsellors } from "./mockdata/counsellors";
 import type { Counsellor, Invite } from "./types";
 import { trpc, trpcClient } from "../../lib/trpc";
 

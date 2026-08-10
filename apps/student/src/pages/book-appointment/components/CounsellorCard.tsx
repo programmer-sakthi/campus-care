@@ -1,13 +1,25 @@
 import { Button } from "@repo/ui/components/button";
-import { Badge } from "@repo/ui/components/badge";
-import { Card, CardContent, CardFooter, CardHeader } from "@repo/ui/components/card";
-import { Avatar, AvatarFallback } from "@repo/ui/components/avatar";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+} from "@repo/ui/components/card";
 import { MessageSquare, Send } from "lucide-react";
-import type { Application, Counsellor } from "../types";
 
-// Person names render in Fraunces across the app — the one warm, human
-// typographic signal against an otherwise plain sans-serif UI.
-const nameFont = { fontFamily: "'Fraunces', Georgia, serif" };
+interface Counsellor {
+  id: string;
+  name: string;
+  email: string;
+}
+
+interface Application {
+  id: string;
+  counsellorId: string;
+  reason: string;
+  status: string;
+  requestedAt: string;
+}
 
 interface CounsellorCardProps {
   counsellor: Counsellor;
@@ -23,50 +35,20 @@ export function CounsellorCard({
   onOpenChat,
 }: CounsellorCardProps) {
   return (
-    <Card className="border-neutral-200 shadow-none">
-      <CardHeader className="pb-3">
-        <div className="flex items-start gap-3">
-          <Avatar className="h-11 w-11">
-            <AvatarFallback className="bg-[#EDF2EF] text-sm font-medium text-[#3F5A4E]">
-              {counsellor.initials}
-            </AvatarFallback>
-          </Avatar>
-          <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-2">
-              <h3 className="truncate text-base font-medium text-neutral-900" style={nameFont}>
-                {counsellor.name}
-              </h3>
-              <span
-                className={[
-                  "h-1.5 w-1.5 shrink-0 rounded-full",
-                  counsellor.availability === "available" ? "bg-[#4F6F62]" : "bg-[#C99A3B]",
-                ].join(" ")}
-              />
-            </div>
-            <p className="mt-0.5 text-xs text-neutral-500">
-              {counsellor.yearsExperience} years experience ·{" "}
-              {counsellor.availability === "available" ? "Available" : "Limited slots"}
-            </p>
-          </div>
+    <Card>
+      <CardHeader>
+        <div>
+          <h3 className="text-base font-semibold text-neutral-900">
+            {counsellor.name}
+          </h3>
+
+          <p className="mt-1 text-sm text-neutral-500">{counsellor.email}</p>
         </div>
       </CardHeader>
 
-      <CardContent className="space-y-3 pb-4">
-        <div className="flex flex-wrap gap-1.5">
-          {counsellor.specialties.map((s) => (
-            <Badge
-              key={s}
-              variant="outline"
-              className="border-neutral-200 font-normal text-neutral-600"
-            >
-              {s}
-            </Badge>
-          ))}
-        </div>
-        <p className="text-sm leading-relaxed text-neutral-500">{counsellor.bio}</p>
-      </CardContent>
+      <CardContent />
 
-      <CardFooter className="pt-0">
+      <CardFooter>
         {existingApplication ? (
           <Button
             variant="outline"
@@ -74,9 +56,7 @@ export function CounsellorCard({
             onClick={() => onOpenChat(existingApplication)}
           >
             <MessageSquare className="h-4 w-4" />
-            {existingApplication.status === "pending"
-              ? "Application sent · Open chat"
-              : "Open chat"}
+            Open chat
           </Button>
         ) : (
           <Button

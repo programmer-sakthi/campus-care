@@ -14,18 +14,20 @@ Day 2 :
 
 Day 3 : 
 
-- Counsellor Invitation backend 
+- Counsellor Invitation backend ✅
 - Counsellor booking backend 
 - Counsellor-Student chat backend 
 
 
 Day 4 : 
 
-- Daily journal
+- Daily journal frontend ✅ 
+- Daily journal backend 
 
 Day 5 : 
 
-- Periodical assesments
+- Periodical assesments frontend 
+- Periodical assesments backend 
 
 Day 6 :
 
