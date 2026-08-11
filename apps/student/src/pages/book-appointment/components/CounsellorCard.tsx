@@ -16,14 +16,16 @@ interface Counsellor {
 
 interface CounsellorCardProps {
   counsellor: Counsellor;
-  existingApplication?: Application;
-  onRequest: (counsellor: Counsellor) => void;
-  onOpenChat: (application: Application) => void;
+  latestApplication?: Application;
+  activeApplication?: Application;
+  onRequest: () => void;
+  onOpenChat: () => void;
 }
 
 export function CounsellorCard({
   counsellor,
-  existingApplication,
+  latestApplication,
+  activeApplication,
   onRequest,
   onOpenChat,
 }: CounsellorCardProps) {
@@ -41,24 +43,32 @@ export function CounsellorCard({
 
       <CardContent />
 
-      <CardFooter>
-        {existingApplication ? (
+      <CardFooter className="flex-col items-stretch gap-2">
+        <div className="flex gap-2">
           <Button
             variant="outline"
-            className="w-full gap-1.5 border-neutral-200"
-            onClick={() => onOpenChat(existingApplication)}
+            className="flex-1 gap-1.5 border-neutral-200"
+            disabled={!latestApplication}
+            onClick={onOpenChat}
           >
             <MessageSquare className="h-4 w-4" />
             Open chat
           </Button>
-        ) : (
+
           <Button
-            className="w-full gap-1.5 bg-neutral-900 hover:bg-neutral-800"
-            onClick={() => onRequest(counsellor)}
+            className="flex-1 gap-1.5 bg-neutral-900 hover:bg-neutral-800"
+            disabled={!!activeApplication}
+            onClick={onRequest}
           >
             <Send className="h-4 w-4" />
-            Request session
+            Book appointment
           </Button>
+        </div>
+
+        {activeApplication && (
+          <p className="text-xs text-amber-700">
+            You already have an active appointment with this counsellor. Complete it before booking another one.
+          </p>
         )}
       </CardFooter>
     </Card>

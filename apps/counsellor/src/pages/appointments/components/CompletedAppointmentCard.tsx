@@ -1,45 +1,23 @@
-import { Building2, CalendarClock, CheckCircle2, PenLine } from 'lucide-react';
+import { Building2, CalendarClock, CheckCircle2, PenLine } from "lucide-react";
 
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-} from '@repo/ui/components/card';
+import { Card, CardContent, CardHeader } from "@repo/ui/components/card";
 
-import { Badge } from '@repo/ui/components/badge';
-import { Button } from '@repo/ui/components/button';
-import { Label } from '@repo/ui/components/label';
-import { Textarea } from '@repo/ui/components/textarea';
+import { Badge } from "@repo/ui/components/badge";
+import type { Appointment } from "../types/appointment";
 
-import { institutionOf, studentOf, type Appointment } from '../mock-data';
+import { formatDateTime } from "../utils/date";
 
-import { formatDateTime } from '../utils/date';
-
-import { nameFont } from '../utils/styles';
+import { nameFont } from "../utils/styles";
 
 interface Props {
   appointment: Appointment;
-
-  draft: string;
-
-  dirty: boolean;
-
-  setDraft: (value: string) => void;
-
-  onSave: () => void;
 }
 
-export function CompletedAppointmentCard({
-  appointment,
-  draft,
-  dirty,
-  setDraft,
-  onSave,
-}: Props) {
-  const student = studentOf(appointment.studentId);
-
-  const institution = institutionOf(student.institutionId);
+export function CompletedAppointmentCard({ appointment }: Props) {
+  const studentName = appointment.student.name ?? "Student";
+  const institutionName =
+    appointment.student.institution.name ??
+    appointment.student.institution.code;
 
   return (
     <Card className="border-neutral-200 shadow-none">
@@ -50,20 +28,24 @@ export function CompletedAppointmentCard({
               className="text-lg font-medium text-neutral-900"
               style={nameFont}
             >
-              {student.name}
+              {studentName}
             </h3>
 
             <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-neutral-500">
               <span className="flex items-center gap-1.5">
                 <Building2 className="h-3.5 w-3.5" />
 
-                {institution.name}
+                {institutionName}
               </span>
 
               <span className="flex items-center gap-1.5">
                 <CalendarClock className="h-3.5 w-3.5" />
 
-                {formatDateTime(appointment.sessionAt)}
+                {formatDateTime(
+                  appointment.completedAt ??
+                    appointment.scheduledAt ??
+                    undefined,
+                )}
               </span>
             </div>
           </div>
@@ -80,35 +62,20 @@ export function CompletedAppointmentCard({
 
       <CardContent className="space-y-3 pb-4">
         <p className="text-sm text-neutral-500">
-          <span className="font-medium text-neutral-600">Reason:</span>{' '}
+          <span className="font-medium text-neutral-600">Reason:</span>{" "}
           {appointment.reason}
         </p>
 
         <div>
-          <Label className="mb-1.5 flex items-center gap-1.5 text-xs font-medium text-neutral-600">
+          <p className="mb-1.5 flex items-center gap-1.5 text-xs font-medium text-neutral-600">
             <PenLine className="h-3.5 w-3.5" />
             Session review
-          </Label>
-
-          <Textarea
-            value={draft}
-            onChange={(e) => setDraft(e.target.value)}
-            placeholder="Summarize how the session went, any concerns, and follow-up plans..."
-            className="min-h-[96px] resize-none text-sm"
-          />
+          </p>
+          <p className="whitespace-pre-wrap rounded-lg bg-neutral-50 p-3 text-sm text-neutral-600">
+            {appointment.sessionNote || "No session note was recorded."}
+          </p>
         </div>
       </CardContent>
-
-      <CardFooter className="justify-end pt-0">
-        <Button
-          size="sm"
-          disabled={!dirty}
-          onClick={onSave}
-          className="bg-neutral-900 hover:bg-neutral-800 disabled:opacity-40"
-        >
-          {appointment.review ? 'Update review' : 'Save review'}
-        </Button>
-      </CardFooter>
     </Card>
   );
 }

@@ -1,76 +1,129 @@
-import { useMemo, useState } from 'react';
-import {
-  appointments as initialAppointments,
-  type Appointment,
-} from '../mock-data';
-import { toDatetimeLocal } from '../utils/date';
+import { useMemo, useState } from "react";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { trpc, trpcClient } from "../../../lib/trpc";
+import type { Appointment } from "../types/appointment";
+import { toDatetimeLocal } from "../utils/date";
 
 export function useAppointments() {
-  const [appointments, setAppointments] =
-    useState<Appointment[]>(initialAppointments);
+  const email = useMemo(
+    () => window.localStorage.getItem("email") ?? "sakthi@gmail.com",
+    [],
+  );
+  const pendingQuery = useQuery({
+    ...trpc.counsellor.appointmentRequests.queryOptions({
+      counsellorEmail: email,
+    }),
+    refetchInterval: 15_000,
+  });
+  const scheduledQuery = useQuery({
+    ...trpc.counsellor.scheduledAppointments.queryOptions({
+      counsellorEmail: email,
+    }),
+    refetchInterval: 15_000,
+  });
+  const completedQuery = useQuery({
+    ...trpc.counsellor.completedAppointments.queryOptions({
+      counsellorEmail: email,
+    }),
+    refetchInterval: 15_000,
+  });
 
   const [scheduleTarget, setScheduleTarget] = useState<Appointment | null>(
     null,
   );
 
-  const [scheduleValue, setScheduleValue] = useState('');
+  const [scheduleValue, setScheduleValue] = useState("");
 
-  const [reviewDrafts, setReviewDrafts] = useState<Record<string, string>>({});
+  const [completeTarget, setCompleteTarget] = useState<Appointment | null>(
+    null,
+  );
+  const [sessionNote, setSessionNote] = useState("");
+
+  const refresh = () => {
+    pendingQuery.refetch();
+    scheduledQuery.refetch();
+    completedQuery.refetch();
+  };
+
+  const scheduleMutation = useMutation({
+    mutationFn: ({
+      appointmentId,
+      scheduledAt,
+    }: {
+      appointmentId: string;
+      scheduledAt: Date;
+    }) =>
+      trpcClient.counsellor.approveAppointment.mutate({
+        appointmentId,
+        counsellorEmail: email,
+        scheduledAt,
+      }),
+    onSuccess: () => {
+      setScheduleTarget(null);
+      refresh();
+    },
+  });
+
+  const completeMutation = useMutation({
+    mutationFn: ({
+      appointmentId,
+      note,
+    }: {
+      appointmentId: string;
+      note: string;
+    }) =>
+      trpcClient.counsellor.completeAppointment.mutate({
+        appointmentId,
+        counsellorEmail: email,
+        sessionNote: note,
+      }),
+    onSuccess: () => {
+      setCompleteTarget(null);
+      setSessionNote("");
+      refresh();
+    },
+  });
 
   const active = useMemo(
     () =>
-      appointments
-        .filter((a) => a.status === 'pending' || a.status === 'scheduled')
-        .sort((a, b) => (a.status === 'pending' ? -1 : 1)),
-    [appointments],
+      [
+        ...(pendingQuery.data ?? []),
+        ...(scheduledQuery.data ?? []),
+      ] as Appointment[],
+    [pendingQuery.data, scheduledQuery.data],
   );
 
   const completed = useMemo(
-    () => appointments.filter((a) => a.status === 'completed'),
-    [appointments],
+    () => (completedQuery.data ?? []) as Appointment[],
+    [completedQuery.data],
   );
 
   function openSchedule(appointment: Appointment) {
     setScheduleTarget(appointment);
 
-    setScheduleValue(toDatetimeLocal(appointment.scheduledAt));
+    setScheduleValue(toDatetimeLocal(appointment.scheduledAt ?? undefined));
   }
 
   function confirmSchedule() {
     if (!scheduleTarget || !scheduleValue) return;
 
-    const iso = new Date(scheduleValue).toISOString();
-
-    setAppointments((prev) =>
-      prev.map((a) =>
-        a.id === scheduleTarget.id
-          ? {
-              ...a,
-              status: 'scheduled',
-              scheduledAt: iso,
-            }
-          : a,
-      ),
-    );
-
-    setScheduleTarget(null);
+    scheduleMutation.mutate({
+      appointmentId: scheduleTarget.id,
+      scheduledAt: new Date(scheduleValue),
+    });
   }
 
-  function saveReview(appointmentId: string) {
-    const text = reviewDrafts[appointmentId];
+  function openComplete(appointment: Appointment) {
+    setCompleteTarget(appointment);
+    setSessionNote("");
+  }
 
-    if (text === undefined) return;
-
-    setAppointments((prev) =>
-      prev.map((a) =>
-        a.id === appointmentId
-          ? {
-              ...a,
-              review: text,
-            }
-          : a,
-      ),
-    );
+  function confirmComplete() {
+    if (!completeTarget || sessionNote.trim().length < 5) return;
+    completeMutation.mutate({
+      appointmentId: completeTarget.id,
+      note: sessionNote.trim(),
+    });
   }
 
   return {
@@ -79,14 +132,28 @@ export function useAppointments() {
 
     scheduleTarget,
     scheduleValue,
-    reviewDrafts,
-
     setScheduleTarget,
     setScheduleValue,
-    setReviewDrafts,
 
     openSchedule,
     confirmSchedule,
-    saveReview,
+    completeTarget,
+    sessionNote,
+    setCompleteTarget,
+    setSessionNote,
+    openComplete,
+    confirmComplete,
+    isLoading:
+      pendingQuery.isLoading ||
+      scheduledQuery.isLoading ||
+      completedQuery.isLoading,
+    error:
+      pendingQuery.error ??
+      scheduledQuery.error ??
+      completedQuery.error ??
+      scheduleMutation.error ??
+      completeMutation.error,
+    isScheduling: scheduleMutation.isPending,
+    isCompleting: completeMutation.isPending,
   };
 }

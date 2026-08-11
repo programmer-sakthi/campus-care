@@ -235,7 +235,7 @@ export const counsellorRouter = router({
           status: "PENDING",
         },
         include: {
-          student: true,
+          student: { include: { institution: true } },
         },
         orderBy: {
           requestedAt: "asc",
@@ -251,7 +251,8 @@ export const counsellorRouter = router({
 
         counsellorEmail: z.string().email(),
 
-        scheduledAt: z.date(),
+        // HTTP clients serialize dates as ISO strings unless a custom transformer is used.
+        scheduledAt: z.coerce.date(),
 
         durationMinutes: z.number().min(15).max(120).default(30),
       }),
@@ -323,7 +324,7 @@ export const counsellorRouter = router({
       });
     }),
 
-  // Counsellor views approved appointments
+  // Counsellor views sessions that have been scheduled but not completed.
   scheduledAppointments: publicProcedure
     .input(
       z.object({
@@ -339,11 +340,33 @@ export const counsellorRouter = router({
         },
 
         include: {
-          student: true,
+          student: { include: { institution: true } },
         },
 
         orderBy: {
           scheduledAt: "asc",
+        },
+      });
+    }),
+
+  // Counsellor views completed sessions and their notes.
+  completedAppointments: publicProcedure
+    .input(
+      z.object({
+        counsellorEmail: z.string().email(),
+      }),
+    )
+    .query(async ({ input }) => {
+      return prisma.appointment.findMany({
+        where: {
+          counsellorEmail: input.counsellorEmail,
+          status: "COMPLETED",
+        },
+        include: {
+          student: { include: { institution: true } },
+        },
+        orderBy: {
+          completedAt: "desc",
         },
       });
     }),

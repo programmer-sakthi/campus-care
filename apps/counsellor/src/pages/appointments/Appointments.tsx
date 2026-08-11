@@ -1,8 +1,9 @@
-import { AppointmentTabs } from './components/AppointmentTabs';
+import { AppointmentTabs } from "./components/AppointmentTabs";
 
-import { ScheduleDialog } from './components/ScheduleDialog';
+import { ScheduleDialog } from "./components/ScheduleDialog";
+import { CompleteSessionDialog } from "./components/CompleteSessionDialog";
 
-import { useAppointments } from './hooks/useAppointments';
+import { useAppointments } from "./hooks/useAppointments";
 
 export default function Appointments() {
   const {
@@ -10,13 +11,20 @@ export default function Appointments() {
     completed,
     scheduleTarget,
     scheduleValue,
-    reviewDrafts,
     setScheduleTarget,
     setScheduleValue,
-    setReviewDrafts,
     openSchedule,
     confirmSchedule,
-    saveReview,
+    completeTarget,
+    sessionNote,
+    setCompleteTarget,
+    setSessionNote,
+    openComplete,
+    confirmComplete,
+    isLoading,
+    error,
+    isScheduling,
+    isCompleting,
   } = useAppointments();
 
   return (
@@ -27,18 +35,24 @@ export default function Appointments() {
         </h1>
 
         <p className="mt-1 text-sm text-neutral-500">
-          Review counselling applications and manage session notes.
+          Schedule counselling requests and record completed sessions.
         </p>
       </div>
 
-      <AppointmentTabs
-        active={active}
-        completed={completed}
-        openSchedule={openSchedule}
-        reviewDrafts={reviewDrafts}
-        setReviewDrafts={setReviewDrafts}
-        saveReview={saveReview}
-      />
+      {isLoading ? (
+        <p className="text-sm text-neutral-500">Loading appointments…</p>
+      ) : error ? (
+        <p className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+          Could not load appointments. Please try again.
+        </p>
+      ) : (
+        <AppointmentTabs
+          active={active}
+          completed={completed}
+          openSchedule={openSchedule}
+          openComplete={openComplete}
+        />
+      )}
 
       <ScheduleDialog
         appointment={scheduleTarget}
@@ -46,6 +60,16 @@ export default function Appointments() {
         setValue={setScheduleValue}
         onClose={() => setScheduleTarget(null)}
         onConfirm={confirmSchedule}
+        isSaving={isScheduling}
+      />
+
+      <CompleteSessionDialog
+        appointment={completeTarget}
+        note={sessionNote}
+        setNote={setSessionNote}
+        onClose={() => setCompleteTarget(null)}
+        onConfirm={confirmComplete}
+        isSaving={isCompleting}
       />
     </div>
   );

@@ -3,13 +3,13 @@ import {
   TabsContent,
   TabsList,
   TabsTrigger,
-} from '@repo/ui/components/tabs';
+} from "@repo/ui/components/tabs";
 
-import { ActiveAppointmentCard } from './ActiveAppointmentCard';
+import { ActiveAppointmentCard } from "./ActiveAppointmentCard";
 
-import { CompletedAppointmentCard } from './CompletedAppointmentCard';
+import { CompletedAppointmentCard } from "./CompletedAppointmentCard";
 
-import type { Appointment } from '../mock-data';
+import type { Appointment } from "../types/appointment";
 
 interface Props {
   active: Appointment[];
@@ -17,23 +17,14 @@ interface Props {
   completed: Appointment[];
 
   openSchedule: (a: Appointment) => void;
-
-  reviewDrafts: Record<string, string>;
-
-  setReviewDrafts: (
-    value: (prev: Record<string, string>) => Record<string, string>,
-  ) => void;
-
-  saveReview: (id: string) => void;
+  openComplete: (a: Appointment) => void;
 }
 
 export function AppointmentTabs({
   active,
   completed,
   openSchedule,
-  reviewDrafts,
-  setReviewDrafts,
-  saveReview,
+  openComplete,
 }: Props) {
   return (
     <Tabs defaultValue="active">
@@ -60,6 +51,7 @@ export function AppointmentTabs({
               key={item.id}
               appointment={item}
               onSchedule={openSchedule}
+              onComplete={openComplete}
             />
           ))}
         </div>
@@ -67,26 +59,9 @@ export function AppointmentTabs({
 
       <TabsContent value="completed" className="mt-0">
         <div className="flex flex-col gap-4">
-          {completed.map((item) => {
-            const draft = reviewDrafts[item.id] ?? item.review ?? '';
-
-            return (
-              <CompletedAppointmentCard
-                key={item.id}
-                appointment={item}
-                draft={draft}
-                dirty={draft !== (item.review ?? '')}
-                setDraft={(value) =>
-                  setReviewDrafts((prev) => ({
-                    ...prev,
-
-                    [item.id]: value,
-                  }))
-                }
-                onSave={() => saveReview(item.id)}
-              />
-            );
-          })}
+          {completed.map((item) => (
+            <CompletedAppointmentCard key={item.id} appointment={item} />
+          ))}
         </div>
       </TabsContent>
     </Tabs>

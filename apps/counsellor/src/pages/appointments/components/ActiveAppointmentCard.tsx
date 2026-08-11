@@ -1,30 +1,36 @@
-import { Building2, CalendarClock, Clock3, MessageSquare } from 'lucide-react';
+import { Building2, CalendarClock, CheckCircle2, Clock3 } from "lucide-react";
 
 import {
   Card,
   CardContent,
   CardFooter,
   CardHeader,
-} from '@repo/ui/components/card';
+} from "@repo/ui/components/card";
 
-import { Badge } from '@repo/ui/components/badge';
-import { Button } from '@repo/ui/components/button';
+import { Badge } from "@repo/ui/components/badge";
+import { Button } from "@repo/ui/components/button";
 
-import { institutionOf, studentOf, type Appointment } from '../mock-data';
+import type { Appointment } from "../types/appointment";
 
-import { formatDateTime, timeAgo } from '../utils/date';
+import { formatDateTime, timeAgo } from "../utils/date";
 
-import { nameFont } from '../utils/styles';
+import { nameFont } from "../utils/styles";
 
 interface Props {
   appointment: Appointment;
   onSchedule: (appointment: Appointment) => void;
+  onComplete: (appointment: Appointment) => void;
 }
 
-export function ActiveAppointmentCard({ appointment, onSchedule }: Props) {
-  const student = studentOf(appointment.studentId);
-
-  const institution = institutionOf(student.institutionId);
+export function ActiveAppointmentCard({
+  appointment,
+  onSchedule,
+  onComplete,
+}: Props) {
+  const studentName = appointment.student.name ?? "Student";
+  const institutionName =
+    appointment.student.institution.name ??
+    appointment.student.institution.code;
 
   return (
     <Card className="border-neutral-200 shadow-none">
@@ -35,17 +41,17 @@ export function ActiveAppointmentCard({ appointment, onSchedule }: Props) {
               className="text-lg font-medium text-neutral-900"
               style={nameFont}
             >
-              {student.name}
+              {studentName}
             </h3>
 
             <div className="mt-1 flex items-center gap-1.5 text-xs text-neutral-500">
               <Building2 className="h-3.5 w-3.5" />
 
-              {institution.name}
+              {institutionName}
             </div>
           </div>
 
-          {appointment.status === 'pending' ? (
+          {appointment.status === "PENDING" ? (
             <Badge className="border-none bg-[#F3E4C9] text-[#7A5A17]">
               Awaiting a time
             </Badge>
@@ -77,21 +83,21 @@ export function ActiveAppointmentCard({ appointment, onSchedule }: Props) {
       </CardContent>
 
       <CardFooter className="flex gap-2 pt-0">
-        <Button variant="outline" className="flex-1 gap-1.5" asChild>
-          <a href="/chat">
-            <MessageSquare className="h-4 w-4" />
-            Open chat
-          </a>
-        </Button>
-
-        <Button
-          className="flex-1 bg-neutral-900"
-          onClick={() => onSchedule(appointment)}
-        >
-          <CalendarClock className="h-4 w-4" />
-
-          {appointment.status === 'scheduled' ? 'Reschedule' : 'Schedule'}
-        </Button>
+        {appointment.status === "PENDING" ? (
+          <Button
+            className="flex-1 bg-neutral-900"
+            onClick={() => onSchedule(appointment)}
+          >
+            <CalendarClock className="h-4 w-4" /> Schedule session
+          </Button>
+        ) : (
+          <Button
+            className="flex-1 bg-neutral-900"
+            onClick={() => onComplete(appointment)}
+          >
+            <CheckCircle2 className="h-4 w-4" /> Complete session
+          </Button>
+        )}
       </CardFooter>
     </Card>
   );

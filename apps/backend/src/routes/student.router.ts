@@ -131,13 +131,32 @@ export const studentRouter = router({
       }),
     )
     .mutation(async ({ input }) => {
-      return prisma.appointment.create({
-        data: {
-          studentRegNo: input.studentRegNo,
-          counsellorEmail: input.counsellorEmail,
-          reason: input.reason,
-        },
-      });
+      try {
+        const activeAppointment = await prisma.appointment.findFirst({
+          where: {
+            studentRegNo: input.studentRegNo,
+            counsellorEmail: input.counsellorEmail,
+            status: { in: ["PENDING", "APPROVED"] },
+          },
+        });
+
+        if (activeAppointment) {
+          throw new AppError(
+            409,
+            "You already have an active appointment with this counsellor. Complete it before booking another one.",
+          );
+        }
+
+        return await prisma.appointment.create({
+          data: {
+            studentRegNo: input.studentRegNo,
+            counsellorEmail: input.counsellorEmail,
+            reason: input.reason,
+          },
+        });
+      } catch (error) {
+        return appErrorToTRPC(error);
+      }
     }),
 
   // Student views their appointments

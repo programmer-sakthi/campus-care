@@ -12,9 +12,12 @@ import Insights from "./pages/Insights/Insights";
 export const router = createBrowserRouter([
   {
     path: "/",
-    Component: Login ,
 
-    children: [ 
+    children: [
+      {
+        path: "/",
+        Component: Login,
+      },
       {
         path: "register",
         Component: Register,
@@ -31,15 +34,15 @@ export const router = createBrowserRouter([
         Component: Counsellors,
       },
       {
-        path: "dashboard",  
-        Component : Dashboard
+        path: "dashboard",
+        Component: Dashboard
       },
       {
-        path: "students",  
-        Component : Students
+        path: "students",
+        Component: Students
       },
       {
-        path : "insights",
+        path: "insights",
         Component: Insights
       }
 

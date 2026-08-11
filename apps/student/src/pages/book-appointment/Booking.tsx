@@ -6,6 +6,7 @@ import { formatDateTime, timeAgo } from "./utils/format";
 import type { Application, ApplicationStatus } from "./types";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { trpc } from "@/lib/trpc";
+import { useNavigate } from "react-router";
 
 interface BookingProps {
   onOpenChat?: (applicationId: string) => void;
@@ -18,6 +19,7 @@ interface DBCounsellor {
 
 export default function Booking({ onOpenChat }: BookingProps) {
   const [bookingTarget, setBookingTarget] = useState<DBCounsellor | null>(null);
+  const navigate = useNavigate();
 
   const regNo = useMemo(() => {
     if (typeof window === "undefined") {
@@ -75,11 +77,28 @@ export default function Booking({ onOpenChat }: BookingProps) {
     });
   }, [appointments]);
 
-  const applicationByCounsellor = useMemo(() => {
+  const latestApplicationByCounsellor = useMemo(() => {
     const map = new Map<string, Application>();
 
     applications.forEach((application) => {
-      map.set(application.counsellorId, application);
+      if (!map.has(application.counsellorId)) {
+        map.set(application.counsellorId, application);
+      }
+    });
+
+    return map;
+  }, [applications]);
+
+  const activeApplicationByCounsellor = useMemo(() => {
+    const map = new Map<string, Application>();
+
+    applications.forEach((application) => {
+      if (
+        (application.status === "pending" || application.status === "scheduled") &&
+        !map.has(application.counsellorId)
+      ) {
+        map.set(application.counsellorId, application);
+      }
     });
 
     return map;
@@ -103,7 +122,12 @@ export default function Booking({ onOpenChat }: BookingProps) {
   }
 
   function handleOpenChat(application: Application) {
-    onOpenChat?.(application.id);
+    if (onOpenChat) {
+      onOpenChat(application.id);
+      return;
+    }
+
+    navigate("/chat");
   }
 
   return (
@@ -177,7 +201,10 @@ export default function Booking({ onOpenChat }: BookingProps) {
         ) : (
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             {availableCounsellors?.map((counsellor) => {
-              const existingApplication = applicationByCounsellor.get(
+              const latestApplication = latestApplicationByCounsellor.get(
+                counsellor.email,
+              );
+              const activeApplication = activeApplicationByCounsellor.get(
                 counsellor.email,
               );
 
@@ -185,9 +212,14 @@ export default function Booking({ onOpenChat }: BookingProps) {
                 <CounsellorCard
                   key={counsellor.email}
                   counsellor={counsellor}
-                  existingApplication={existingApplication}
+                  latestApplication={latestApplication}
+                  activeApplication={activeApplication}
                   onRequest={() => setBookingTarget(counsellor)}
-                  onOpenChat={handleOpenChat}
+                  onOpenChat={() => {
+                    if (latestApplication) {
+                      handleOpenChat(latestApplication);
+                    }
+                  }}
                 />
               );
             })}
