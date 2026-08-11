@@ -1,4 +1,5 @@
 import { Badge } from "@repo/ui/components/badge";
+import { CheckCircle2, Clock3, CalendarCheck2 } from "lucide-react";
 import type { ApplicationStatus } from "../types";
 
 const statusStyles: Record<ApplicationStatus, string> = {
@@ -13,6 +14,19 @@ const statusLabels: Record<ApplicationStatus, string> = {
   completed: "Completed",
 };
 
+const statusIcons: Record<ApplicationStatus, typeof Clock3> = {
+  pending: Clock3,
+  scheduled: CalendarCheck2,
+  completed: CheckCircle2,
+};
+
 export function ApplicationStatusBadge({ status }: { status: ApplicationStatus }) {
-  return <Badge className={`border-none ${statusStyles[status]}`}>{statusLabels[status]}</Badge>;
+  const Icon = statusIcons[status];
+
+  return (
+    <Badge className={`gap-1.5 border-none px-2.5 py-1 ${statusStyles[status]}`}>
+      <Icon className="h-3.5 w-3.5" strokeWidth={2.25} />
+      {statusLabels[status]}
+    </Badge>
+  );
 }

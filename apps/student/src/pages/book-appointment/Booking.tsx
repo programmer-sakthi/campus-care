@@ -7,6 +7,13 @@ import type { Application, ApplicationStatus } from "./types";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { trpc } from "@/lib/trpc";
 import { useNavigate } from "react-router";
+import {
+  CalendarClock,
+  ChevronRight,
+  Loader2,
+  Sparkles,
+  Users,
+} from "lucide-react";
 
 interface BookingProps {
   onOpenChat?: (applicationId: string) => void;
@@ -131,24 +138,31 @@ export default function Booking({ onOpenChat }: BookingProps) {
   }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold text-neutral-900">
-          Book a counsellor
-        </h1>
+    <div className="mx-auto max-w-5xl space-y-10 px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
+      <div className="flex items-start gap-3">
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#EDF2EF] text-[#3F5A4E]">
+          <CalendarClock className="h-5.5 w-5.5" strokeWidth={2} />
+        </div>
 
-        <p className="mt-1 text-sm text-neutral-500">
-          Counsellors available through {institution?.name}
-        </p>
+        <div>
+          <h1 className="text-2xl font-semibold text-neutral-900">
+            Book a counsellor
+          </h1>
+
+          <p className="mt-1 text-sm text-neutral-500">
+            Counsellors available through {institution?.name}
+          </p>
+        </div>
       </div>
 
       {applications.length > 0 && (
-        <div className="mb-8">
-          <h2 className="mb-3 text-sm font-medium text-neutral-600">
+        <section>
+          <h2 className="mb-3 flex items-center gap-1.5 text-sm font-medium text-neutral-600">
+            <Sparkles className="h-4 w-4 text-neutral-400" strokeWidth={2} />
             Your applications
           </h2>
 
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-2.5">
             {applications.map((application) => {
               const counsellor = availableCounsellors?.find(
                 (c) => c.email === application.counsellorId,
@@ -164,40 +178,56 @@ export default function Booking({ onOpenChat }: BookingProps) {
                 <button
                   key={application.id}
                   onClick={() => handleOpenChat(application)}
-                  className="flex items-center justify-between gap-3 rounded-xl border border-neutral-200 bg-white px-4 py-3 text-left transition-colors hover:bg-neutral-50"
+                  className="group flex items-center justify-between gap-3 rounded-xl border border-neutral-200 bg-white px-4 py-3.5 text-left shadow-sm transition-all hover:border-neutral-300 hover:bg-neutral-50 hover:shadow"
                 >
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-medium text-neutral-900">
-                      {counsellor.name}
-                    </p>
+                  <div className="flex min-w-0 items-center gap-3">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-neutral-100 text-xs font-semibold text-neutral-600">
+                      {(counsellor.name ?? "?").charAt(0).toUpperCase()}
+                    </div>
 
-                    <p className="mt-0.5 truncate text-xs text-neutral-500">
-                      {application.status === "scheduled" &&
-                      application.scheduledAt
-                        ? formatDateTime(application.scheduledAt)
-                        : `Requested ${timeAgo(application.requestedAt)}`}
-                    </p>
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-medium text-neutral-900">
+                        {counsellor.name}
+                      </p>
+
+                      <p className="mt-0.5 truncate text-xs text-neutral-500">
+                        {application.status === "scheduled" &&
+                        application.scheduledAt
+                          ? formatDateTime(application.scheduledAt)
+                          : `Requested ${timeAgo(application.requestedAt)}`}
+                      </p>
+                    </div>
                   </div>
 
-                  <ApplicationStatusBadge status={application.status} />
+                  <div className="flex shrink-0 items-center gap-2">
+                    <ApplicationStatusBadge status={application.status} />
+                    <ChevronRight className="h-4 w-4 text-neutral-300 transition-transform group-hover:translate-x-0.5 group-hover:text-neutral-400" />
+                  </div>
                 </button>
               );
             })}
           </div>
-        </div>
+        </section>
       )}
 
-      <div>
-        <h2 className="mb-3 text-sm font-medium text-neutral-600">
+      <section>
+        <h2 className="mb-3 flex items-center gap-1.5 text-sm font-medium text-neutral-600">
+          <Users className="h-4 w-4 text-neutral-400" strokeWidth={2} />
           Available counsellors
         </h2>
 
         {counsellorsLoading ? (
-          <p className="text-sm text-neutral-500">Loading counsellors...</p>
+          <div className="flex items-center gap-2 rounded-xl border border-dashed border-neutral-200 px-4 py-8 text-sm text-neutral-500">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            Loading counsellors...
+          </div>
         ) : availableCounsellors?.length === 0 ? (
-          <p className="text-sm text-neutral-500">
-            No counsellors are currently available.
-          </p>
+          <div className="flex flex-col items-center gap-2 rounded-xl border border-dashed border-neutral-200 px-4 py-10 text-center">
+            <Users className="h-6 w-6 text-neutral-300" strokeWidth={1.75} />
+            <p className="text-sm text-neutral-500">
+              No counsellors are currently available.
+            </p>
+          </div>
         ) : (
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             {availableCounsellors?.map((counsellor) => {
@@ -225,7 +255,7 @@ export default function Booking({ onOpenChat }: BookingProps) {
             })}
           </div>
         )}
-      </div>
+      </section>
 
       <BookingDialog
         counsellor={bookingTarget}

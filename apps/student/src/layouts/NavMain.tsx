@@ -87,6 +87,10 @@ export function NavMain() {
                       className={({ isActive }) =>
                         `
         flex w-full items-center gap-2 rounded-md px-2 py-2
+        group-data-[collapsible=icon]:size-8
+        group-data-[collapsible=icon]:justify-center
+        group-data-[collapsible=icon]:gap-0
+        group-data-[collapsible=icon]:p-0
         ${isActive
                           ? "bg-muted text-primary"
                           : "hover:bg-muted"
@@ -94,8 +98,10 @@ export function NavMain() {
         `
                       }
                     >
-                      <item.icon className="size-4" />
-                      <span>{item.title}</span>
+                      <item.icon className="size-4 shrink-0" />
+                      <span className="group-data-[collapsible=icon]:hidden">
+                        {item.title}
+                      </span>
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
