@@ -1,5 +1,6 @@
 import React, { useState } from "react"
 import { cn } from "@repo/ui/lib/utils"
+import { useMutation } from "@tanstack/react-query"
 import { Button } from "@repo/ui/components/button"
 import {
   Field,
@@ -8,75 +9,51 @@ import {
   FieldLabel,
 } from "@repo/ui/components/field"
 import { Input } from "@repo/ui/components/input"
+import { trpc } from "../../lib/trpc"
 
 export function RegisterForm({
   className,
   ...props
 }: React.ComponentProps<"form">) {
   const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
   const [institutionCode, setInstitutionCode] = useState("")
   const [institutionName, setInstitutionName] = useState("")
   const [status, setStatus] = useState<"idle" | "saving" | "success" | "error">("idle")
   const [message, setMessage] = useState("")
 
+  const registerMutation = useMutation(
+    trpc.auth.register.mutationOptions({
+      onSuccess: () => {
+        setStatus("success")
+        setMessage("Institution account created successfully.")
+        setEmail("")
+        setPassword("")
+        setInstitutionCode("")
+        setInstitutionName("")
+      },
+      onError: (error: unknown) => {
+        setStatus("error")
+        setMessage(
+          error instanceof Error ? error.message : "Unable to create institution account.",
+        )
+      },
+    }),
+  )
+
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setStatus("saving")
     setMessage("")
+    
 
-    try {
-      const baseUrl = import.meta.env.VITE_BACKEND_URL ?? ""
-      const response = await fetch(`${baseUrl}/institutions`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email,
-          code: institutionCode,
-          name: institutionName,
-        }),
-      })
-
-      let responseBody: any = null
-      const contentType = response.headers.get("content-type") || ""
-
-      if (contentType.includes("application/json")) {
-        try {
-          responseBody = await response.json()
-        } catch (err) {
-          responseBody = null
-        }
-      } else {
-        // Fallback: try to read text body and coerce to message if present
-        try {
-          const text = await response.text()
-          if (text) {
-            try {
-              responseBody = JSON.parse(text)
-            } catch {
-              responseBody = { message: text }
-            }
-          }
-        } catch {
-          // ignore
-        }
-      }
-
-      if (!response.ok) {
-        const errMsg = responseBody?.message || response.statusText || "Unable to create institution."
-        throw new Error(errMsg)
-      }
-
-      setStatus("success")
-      setMessage("Institution created successfully.")
-      setEmail("")
-      setInstitutionCode("")
-      setInstitutionName("")
-    } catch (error) {
-      setStatus("error")
-      setMessage(error instanceof Error ? error.message : "Unexpected error")
-    }
+    registerMutation.mutate({
+      email,
+      password,
+      type: "INSTITUTION",
+      institutionCode,
+      institutionName,
+    })
   }
 
   return (
@@ -120,6 +97,19 @@ export function RegisterForm({
         </Field>
 
         <Field>
+          <FieldLabel htmlFor="password">Password</FieldLabel>
+          <Input
+            id="password"
+            name="password"
+            type="password"
+            placeholder="Create a password"
+            required
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+          />
+        </Field>
+
+        <Field>
           <div className="flex items-center">
             <FieldLabel htmlFor="institution-name">Institution name</FieldLabel>
           </div>
@@ -134,8 +124,8 @@ export function RegisterForm({
         </Field>
 
         <Field>
-          <Button type="submit" disabled={status === "saving"}>
-            {status === "saving" ? "Registering…" : "Register"}
+          <Button type="submit" disabled={status === "saving" || registerMutation.isPending}>
+            {status === "saving" || registerMutation.isPending ? "Registering…" : "Register"}
           </Button>
         </Field>
 
@@ -143,7 +133,7 @@ export function RegisterForm({
           <Field>
             <FieldDescription
               className={`text-center ${
-                status === "error" ? "text-destructive" : "text-success"
+                status === "error" ? "text-destructive" : "text-success text-green-300"
               }`}
             >
               {message}

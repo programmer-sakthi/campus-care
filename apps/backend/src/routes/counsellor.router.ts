@@ -15,6 +15,21 @@ function normalizeCounsellorError(error: unknown): unknown {
   return error;
 }
 
+export async function createCounsellor(
+  input: {
+    email: string;
+    name?: string;
+  },
+  db: Prisma.TransactionClient | typeof prisma = prisma,
+) {
+  return await db.counsellor.create({
+    data: {
+      email: input.email,
+      name: input.name,
+    },
+  });
+}
+
 export const counsellorRouter = router({
   create: publicProcedure
     .input(
@@ -25,12 +40,7 @@ export const counsellorRouter = router({
     )
     .mutation(async ({ input }) => {
       try {
-        return await prisma.counsellor.create({
-          data: {
-            email: input.email,
-            name: input.name,
-          },
-        });
+        return await createCounsellor(input);
       } catch (error) {
         return appErrorToTRPC(normalizeCounsellorError(error));
       }

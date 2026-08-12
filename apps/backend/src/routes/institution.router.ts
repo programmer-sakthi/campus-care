@@ -25,6 +25,23 @@ function normalizePrismaError(error: unknown): unknown {
   return error;
 }
 
+export async function createInstitution(
+  input: {
+    code: string;
+    email: string;
+    name?: string;
+  },
+  db: Prisma.TransactionClient | typeof prisma = prisma,
+) {
+  return await db.institution.create({
+    data: {
+      code: input.code,
+      email: input.email,
+      name: input.name,
+    },
+  });
+}
+
 export const institutionRouter = router({
   create: publicProcedure
     .input(
@@ -36,13 +53,7 @@ export const institutionRouter = router({
     )
     .mutation(async ({ input }) => {
       try {
-        return await prisma.institution.create({
-          data: {
-            code: input.code,
-            email: input.email,
-            name: input.name,
-          },
-        });
+        return await createInstitution(input);
       } catch (error) {
         return appErrorToTRPC(normalizePrismaError(error));
       }

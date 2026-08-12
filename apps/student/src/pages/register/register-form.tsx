@@ -20,16 +20,15 @@ export function RegisterForm({
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
-  const createStudent = useMutation(
-    trpc.student.create.mutationOptions({
+  const registerMutation = useMutation(
+    trpc.auth.register.mutationOptions({
       onSuccess: () => {
         setError(null);
         setSuccess("Registered successfully");
       },
-
-      onError: (error) => {
+      onError: (error: any) => {
         setSuccess(null);
-        setError(error.message);
+        setError(error?.message ?? "Registration failed");
       },
     }),
   );
@@ -42,11 +41,13 @@ export function RegisterForm({
 
     const formData = new FormData(e.currentTarget);
 
-    createStudent.mutate({
+    registerMutation.mutate({
       email: formData.get("email") as string,
-      name: formData.get("name") as string,
+      password: formData.get("password") as string,
+      type: "STUDENT",
+      studentRegNo: formData.get("register-number") as string,
       institutionCode: formData.get("code") as string,
-      regNo: formData.get("register-number") as string,
+      name: formData.get("name") as string,
     });
   };
 
@@ -78,6 +79,12 @@ export function RegisterForm({
         </Field>
 
         <Field>
+          <FieldLabel htmlFor="password">Password</FieldLabel>
+
+          <Input id="password" name="password" type="password" placeholder="Create a password" required />
+        </Field>
+
+        <Field>
           <FieldLabel htmlFor="institution-code">Institution code</FieldLabel>
 
           <Input
@@ -106,8 +113,8 @@ export function RegisterForm({
         </Field>
 
         <Field>
-          <Button type="submit" disabled={createStudent.isPending}>
-            {createStudent.isPending ? "Registering..." : "Register"}
+          <Button type="submit" disabled={registerMutation.isPending}>
+            {registerMutation.isPending ? "Registering..." : "Register"}
           </Button>
         </Field>
 

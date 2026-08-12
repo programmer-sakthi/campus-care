@@ -4,6 +4,48 @@ import { z } from "zod";
 import { AppError } from "../common/errors/AppError";
 import { appErrorToTRPC, publicProcedure, router } from "../trpc";
 
+export async function createStudent(
+  input: {
+    regNo: string;
+    name?: string;
+    email?: string;
+    institutionCode: string;
+  },
+  db: Prisma.TransactionClient | typeof prisma = prisma,
+) {
+  const institution = await db.institution.findUnique({
+    where: {
+      code: input.institutionCode,
+    },
+  });
+
+  if (!institution) {
+    throw new AppError(404, "Institution does not exist");
+  }
+
+  const existingStudent = await db.student.findUnique({
+    where: {
+      regNo: input.regNo,
+    },
+  });
+
+  if (existingStudent) {
+    throw new AppError(
+      409,
+      "Student with this registration number already exists",
+    );
+  }
+
+  return db.student.create({
+    data: {
+      regNo: input.regNo,
+      name: input.name,
+      email: input.email,
+      institutionCode: input.institutionCode,
+    },
+  });
+}
+
 export const studentRouter = router({
   create: publicProcedure
     .input(
@@ -16,37 +58,7 @@ export const studentRouter = router({
     )
     .mutation(async ({ input }) => {
       try {
-        const institution = await prisma.institution.findUnique({
-          where: {
-            code: input.institutionCode,
-          },
-        });
-
-        if (!institution) {
-          throw new AppError(404, "Institution does not exist");
-        }
-
-        const existingStudent = await prisma.student.findUnique({
-          where: {
-            regNo: input.regNo,
-          },
-        });
-
-        if (existingStudent) {
-          throw new AppError(
-            409,
-            "Student with this registration number already exists",
-          );
-        }
-
-        return prisma.student.create({
-          data: {
-            regNo: input.regNo,
-            name: input.name,
-            email: input.email,
-            institutionCode: input.institutionCode,
-          },
-        });
+        return await createStudent(input);
       } catch (error) {
         return appErrorToTRPC(error);
       }

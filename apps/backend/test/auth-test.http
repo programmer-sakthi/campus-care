@@ -1,0 +1,79 @@
+@baseUrl = http://localhost:8000
+@email = student1@gmail.com
+@password = password123
+@token = paste_token_here
+
+
+### ============================
+### Register Student
+### ============================
+
+POST {{baseUrl}}/trpc/auth.register
+Content-Type: application/json
+
+{
+  "json": {
+    "email": "{{email}}",
+    "password": "{{password}}",
+    "type": "STUDENT",
+    "studentRegNo": "22IT001",
+    "institutionCode": "SKCET"
+  }
+}
+
+
+### ============================
+### Register Counsellor
+### ============================
+
+POST {{baseUrl}}/trpc/auth.register
+Content-Type: application/json
+
+{
+  "json": {
+    "email": "counsellor@gmail.com",
+    "password": "password123",
+    "type": "COUNSELLOR",
+    "counsellorEmail": "counsellor@gmail.com"
+  }
+}
+
+
+### ============================
+### Register Institution
+### ============================
+
+POST {{baseUrl}}/trpc/auth.register
+Content-Type: application/json
+
+{
+  "json": {
+    "email": "admin@skcet.ac.in",
+    "password": "password123",
+    "type": "INSTITUTION",
+    "institutionCode": "SKCET"
+  }
+}
+
+
+### ============================
+### Login
+### ============================
+
+POST {{baseUrl}}/trpc/auth.login
+Content-Type: application/json
+
+{
+  "json": {
+    "email": "{{email}}",
+    "password": "{{password}}"
+  }
+}
+
+
+### ============================
+### Protected Route Test
+### ============================
+
+GET {{baseUrl}}/trpc/student.profile
+Authorization: Bearer {{token}}
