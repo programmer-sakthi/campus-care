@@ -1,0 +1,18 @@
+### Create Institution
+POST http://localhost:8000/institutions
+Content-Type: application/json
+
+{
+  "code": "SKCET",
+  "email": "admin@skcet.ac.in",
+  "name": "Sri Krishna College of Engineering and Technology"
+}
+
+### Add Counsellor
+POST http://localhost:8000/institutions/counsellor/add
+Content-Type: application/json
+
+{
+  "code": "1",
+  "email": "ajay@counsellor.in"
+}

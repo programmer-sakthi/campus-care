@@ -1,8 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
   provider = "prisma-client"
   output   = "../generated/prisma"
@@ -13,29 +8,181 @@ datasource db {
 }
 
 model Institution {
-  code          String                     @id
-  email         String                     @unique
-  name          String?
+  code  String  @id
+  email String  @unique
+  name  String?
 
-  counsellors   InstitutionCounsellor[]
+  counsellors InstitutionCounsellor[]
+  students    Student[]
+}
+
+model Student {
+  regNo String  @id
+  name  String?
+  email String? @unique
+
+  institutionCode String
+  institution     Institution @relation(fields: [institutionCode], references: [code])
+
+  appointments Appointment[]
+  dailyCheckIns DailyCheckIn[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Counsellor {
-  email         String                     @id
-  name          String?
+  email String @id
+  name  String?
 
-  institutions  InstitutionCounsellor[]
+  institutions InstitutionCounsellor[]
+  appointments Appointment[]
+
+  createdAt DateTime @default(now())
+}
+
+enum CounsellorInvitationStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  CANCELLED
+  LEFT
 }
 
 model InstitutionCounsellor {
-  institutionCode  String
-  counsellorEmail  String
+  institutionCode String
+  counsellorEmail String
 
-  noOfSessions Int? @default(0)
+  status CounsellorInvitationStatus @default(PENDING)
+
+  noOfSessions Int @default(0)
+
+  invitedAt DateTime @default(now())
+  joinedAt  DateTime?
+
   institution Institution @relation(fields: [institutionCode], references: [code])
+
   counsellor Counsellor @relation(fields: [counsellorEmail], references: [email])
 
-  joinedAt DateTime @default(now())
-
   @@id([institutionCode, counsellorEmail])
+}
+
+enum AppointmentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  COMPLETED
+  CANCELLED
+}
+
+model Appointment {
+  id String @id @default(cuid())
+
+  studentRegNo String
+  counsellorEmail String
+
+  reason String
+
+  status AppointmentStatus @default(PENDING)
+
+  scheduledAt DateTime?
+  durationMinutes Int @default(30)
+
+  rejectionReason String?
+  sessionNote String?
+
+  requestedAt DateTime @default(now())
+  approvedAt DateTime?
+  completedAt DateTime?
+
+  student Student @relation(fields: [studentRegNo], references: [regNo])
+
+  counsellor Counsellor @relation(fields: [counsellorEmail], references: [email])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum MoodTime {
+  MORNING
+  EVENING
+  NIGHT
+}
+
+enum Mood {
+  VERY_BAD
+  BAD
+  NEUTRAL
+  GOOD
+  VERY_GOOD
+}
+
+model DailyCheckIn {
+  id String @id @default(cuid())
+
+  studentRegNo String
+
+  student Student @relation( fields: [studentRegNo],references: [regNo], onDelete: Cascade )
+
+  date DateTime @db.Date
+
+  note String? @db.Text
+
+  mentalHealthScore Int?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  moods MoodEntry[]
+  responses QuestionResponse[]
+
+  @@unique([studentRegNo, date])
+  @@index([studentRegNo, date])
+}
+
+model MoodEntry {
+  id String @id @default(cuid())
+
+  dailyCheckInId String
+
+  dailyCheckIn DailyCheckIn @relation(fields: [dailyCheckInId],references: [id],onDelete: Cascade)
+
+  time MoodTime
+  mood Mood
+
+  createdAt DateTime @default(now())
+
+  @@unique([dailyCheckInId, time])
+  @@index([dailyCheckInId])
+}
+
+model CheckInQuestion {
+  id String @id @default(cuid())
+
+  question String
+  active Boolean @default(true)
+
+  responses QuestionResponse[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model QuestionResponse {
+  id String @id @default(cuid())
+
+  dailyCheckInId String
+
+  dailyCheckIn DailyCheckIn @relation(fields: [dailyCheckInId],references: [id],onDelete: Cascade)
+
+  questionId String
+
+  question CheckInQuestion @relation( fields: [questionId], references: [id] )
+
+  answer String @db.Text
+
+  createdAt DateTime @default(now())
+
+  @@unique([dailyCheckInId, questionId])
+  @@index([dailyCheckInId])
 }

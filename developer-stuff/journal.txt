@@ -1,0 +1,13 @@
+Sub : Issues while initializing shadcn/ui in monorepo 
+
+Description : 
+
+I was trying to add ui components from shadcn/ui in packages/ui folder. 
+Shadcn or turbo repo had documentation had documentation for creating new projects only and 
+no reference on how to add it in exisiting ones.
+
+Soltuion : 
+
+I created a new project of shadcn/ui monorepo template and copied the tsconfig , 
+package.json , components.json for packages/ui and apps/*
+

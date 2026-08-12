@@ -1,45 +1,50 @@
 Day 1 : 
 
-- Project setup ( mono repo + prisma )
-- Instution creation 
-- Counsellor creation 
-- Student creation
+- Project setup ( mono repo + prisma + shadcn ui ) ✅
+- Instution creation ✅
+- Counsellor creation ✅
 
 
 Day 2 : 
 
-- Counsellor booking  
-    - book Counsellor with a reason 
-    - Counsellor approves 
-    - After the appointment is over Counsellor gives an input about the student ( store it somewhere to feed the RAG model )
-    - student can give review about the session ( store it somewhere to summerize about the Counsellor , use the rating to store overall rating of the counsellor )
-
-- Counsellor chat 
-    - use socket.io to implement chat 
-    - store the whole chat as a file somewhere to feed the RAG model 
+- Student creation ✅
+- Counsellor Invitation frontend ( Admin app and Counsellor app ) ✅ 
+- Counsellor booking frontend ( Student app and Counsellor app ) ✅ 
+- Counsellor-Student chat frontend ( Student app and Counsellor app ) ✅
 
 Day 3 : 
 
-- Daily journal ( use the data for RAG  )
-- Periodical assesments ( use the assesment results for RAG data)
+- Counsellor Invitation backend ✅
+- Counsellor booking backend 
+- Counsellor-Student chat backend 
+
 
 Day 4 : 
 
-- Peer creation ( with admin approval )
-- Peer support 
+- Daily journal frontend ✅ 
+- Daily journal backend 
 
 Day 5 : 
 
-- recovery mechanisms 
-
+- Periodical assesments frontend 
+- Periodical assesments backend 
 
 Day 6 :
 
+- authentication ( store details in local storage for now )
+
 Day 7 : 
 
-Day 8 : 
+- chatbot
 
-Day 9 : 
 
-Day 10 : 
 
+
+
+PHRASE 2 : 
+
+- crisis detection
+- admin insights 
+- student insights 
+- Adding students performance data to the RAG
+- peer support module

@@ -1,0 +1,3 @@
+FROM setting up monorepo : 
+
+always setup shadcn template first if you are gonna use it in future

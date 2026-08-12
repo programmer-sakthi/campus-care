@@ -1,3 +1,6 @@
 3000 - student frontend 
+3001 - admin frontend 
+3002 - counsellor frontend 
+3003 - peer frontend 
 
-8000 - booking-service
+8000 - backend

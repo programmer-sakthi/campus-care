@@ -1,0 +1,8 @@
+### Create Counsellor
+POST http://localhost:8000/counsellors
+Content-Type: application/json
+
+{
+  "email": "john.doe@example.com",
+  "name": "John Doe"
+}
