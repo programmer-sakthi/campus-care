@@ -6,6 +6,7 @@ import NavBar from "./layouts/NavBar";
 import Chat from "./pages/chat/Chat";
 import Appointments from "./pages/appointments/Appointments";
 import Institutions from "./pages/institutions/Institutions";
+import ProtectedLayout from "./layouts/ProtectedLayout";
 
 export const router = createBrowserRouter([
   // Guest routes
@@ -24,8 +25,11 @@ export const router = createBrowserRouter([
 
   // Protected routes
    {
-    Component: NavBar,
+    Component: ProtectedLayout,
     children: [
+      {
+        Component: NavBar,
+        children: [
       {
         path: "chat",
         Component: Chat,
@@ -37,6 +41,8 @@ export const router = createBrowserRouter([
       {
         path: "institutions",
         Component: Institutions,
+      },
+        ],
       },
     ],
   },

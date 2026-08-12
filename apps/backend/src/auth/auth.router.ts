@@ -1,6 +1,6 @@
 import { Prisma, prisma } from "@repo/database";
 import { z } from "zod";
-import { publicProcedure, router } from "../trpc";
+import { protectedProcedure, publicProcedure, router } from "../trpc";
 import { hashPassword, verifyPassword } from "./password";
 import { createToken } from "./jwt";
 import { createStudent } from "../routes/student.router";
@@ -8,6 +8,23 @@ import { createCounsellor } from "../routes/counsellor.router";
 import { createInstitution } from "../routes/institution.router";
 
 export const authRouter = router({
+
+    me: protectedProcedure.query(async ({ ctx }) => {
+        const user = await prisma.user.findUnique({
+            where: { id: ctx.user.id },
+            select: {
+                id: true,
+                email: true,
+                type: true,
+                studentRegNo: true,
+                counsellorEmail: true,
+                institutionCode: true,
+            },
+        });
+
+        if (!user) throw new Error("User no longer exists");
+        return user;
+    }),
 
 
 

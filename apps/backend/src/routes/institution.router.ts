@@ -2,7 +2,7 @@ import { prisma, Prisma, $Enums } from "@repo/database";
 import { z } from "zod";
 
 import { AppError } from "../common/errors/AppError";
-import { appErrorToTRPC, publicProcedure, router } from "../trpc";
+import { appErrorToTRPC, protectedProcedure, publicProcedure, router } from "../trpc";
 
 function normalizePrismaError(error: unknown): unknown {
   if (
@@ -59,15 +59,16 @@ export const institutionRouter = router({
       }
     }),
 
-  inviteCounsellor: publicProcedure
+  inviteCounsellor: protectedProcedure
     .input(
       z.object({
         code: z.string().trim().min(1, "Institution code is required"),
         email: z.string().email(),
       }),
     )
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
       try {
+        if (ctx.user.type !== "INSTITUTION" || ctx.user.institutionCode !== input.code) throw new AppError(401, "Institution admin access required");
         const existing = await prisma.institutionCounsellor.findUnique({
           where: {
             institutionCode_counsellorEmail: {
@@ -118,9 +119,35 @@ export const institutionRouter = router({
       }
     }),
 
-  pendingCounsellors: publicProcedure
+  cancelCounsellorInvitation: protectedProcedure
+    .input(
+      z.object({
+        institutionCode: z.string().trim().min(1),
+        counsellorEmail: z.string().email(),
+      }),
+    )
+    .mutation(async ({ input, ctx }) => {
+      if (ctx.user.type !== "INSTITUTION" || ctx.user.institutionCode !== input.institutionCode) {
+        throw new AppError(401, "Institution admin access required");
+      }
+
+      const invitation = await prisma.institutionCounsellor.findUnique({
+        where: { institutionCode_counsellorEmail: input },
+      });
+      if (!invitation || invitation.status !== "PENDING") {
+        throw new AppError(404, "Pending invitation not found.");
+      }
+
+      return prisma.institutionCounsellor.update({
+        where: { institutionCode_counsellorEmail: input },
+        data: { status: "CANCELLED" },
+      });
+    }),
+
+  pendingCounsellors: protectedProcedure
     .input(z.object({ institutionCode: z.string().trim().min(1) }))
-    .query(async ({ input }) => {
+    .query(async ({ input, ctx }) => {
+      if (ctx.user.type !== "INSTITUTION" || ctx.user.institutionCode !== input.institutionCode) throw new AppError(401, "Institution admin access required");
       return prisma.institutionCounsellor.findMany({
         where: {
           institutionCode: input.institutionCode,
@@ -135,9 +162,10 @@ export const institutionRouter = router({
       });
     }),
 
-  availableCounsellors: publicProcedure
+  availableCounsellors: protectedProcedure
     .input(z.object({ institutionCode: z.string().trim().min(1) }))
-    .query(async ({ input }) => {
+    .query(async ({ input, ctx }) => {
+      if (ctx.user.type !== "INSTITUTION" || ctx.user.institutionCode !== input.institutionCode) throw new AppError(401, "Institution admin access required");
       return prisma.counsellor.findMany({
         where: {
           institutions: {

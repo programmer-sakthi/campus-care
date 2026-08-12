@@ -15,6 +15,7 @@ import { prisma } from '@repo/database';
 import cors from 'cors';
 
 import { verifyToken } from './auth/jwt';
+import type { JwtPayload } from 'jsonwebtoken';
 
 
 export interface Context {
@@ -23,7 +24,7 @@ export interface Context {
 
   db: typeof prisma;
 
-  user: any | null;
+  user: (JwtPayload & { id: string; email: string; type: 'STUDENT' | 'COUNSELLOR' | 'INSTITUTION' }) | null;
 }
 
 
@@ -50,10 +51,14 @@ export const createContext = ({
 
   if (authHeader) {
 
-    const token = authHeader.split(' ')[1];
+    const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : undefined;
 
     if (token) {
-      user = verifyToken(token);
+      try {
+        user = verifyToken(token) as Context['user'];
+      } catch {
+        user = null;
+      }
     }
 
   }
@@ -71,7 +76,7 @@ export const createContext = ({
 
 
 export const protectedProcedure =
-  t.procedure.use(({ ctx, next }) => {
+  t.procedure.use(async ({ ctx, next }) => {
 
 
     if (!ctx.user) {
@@ -84,9 +89,32 @@ export const protectedProcedure =
     }
 
 
+    // JWTs deliberately only contain stable authentication claims. Resolve the
+    // role-specific identifiers here so every protected route works with the
+    // authenticated database user (including tokens issued before new fields
+    // were added to the user model).
+    const authenticatedUser = await ctx.db.user.findUnique({
+      where: { id: ctx.user.id },
+      select: {
+        id: true,
+        email: true,
+        type: true,
+        studentRegNo: true,
+        counsellorEmail: true,
+        institutionCode: true,
+      },
+    });
+
+    if (!authenticatedUser) {
+      throw new TRPCError({
+        code: 'UNAUTHORIZED',
+        message: 'User no longer exists',
+      });
+    }
+
     return next({
       ctx: {
-        user: ctx.user,
+        user: authenticatedUser,
       },
     });
 
@@ -101,6 +129,14 @@ export const createTRPCMiddleware = (
     router: appRouter,
     createContext,
     middleware: cors(),
+    onError({ path, error, input }) {
+      console.error('🔥 tRPC ERROR');
+      console.error('PATH:', path);
+      console.error('INPUT:', input);
+      console.error('MESSAGE:', error.message);
+      console.error('CAUSE:', error.cause);
+      console.error('STACK:', error.stack);
+    },
   });
 
 
