@@ -1,8 +1,50 @@
-import { prisma } from "@repo/database";
+import { Prisma, prisma } from "@repo/database";
 import { z } from "zod";
 
 import { AppError } from "../common/errors/AppError";
-import { appErrorToTRPC, publicProcedure, router } from "../trpc";
+import { appErrorToTRPC, protectedProcedure, publicProcedure, router } from "../trpc";
+
+export async function createStudent(
+  input: {
+    regNo: string;
+    name?: string;
+    email?: string;
+    institutionCode: string;
+  },
+  db: Prisma.TransactionClient | typeof prisma = prisma,
+) {
+  const institution = await db.institution.findUnique({
+    where: {
+      code: input.institutionCode,
+    },
+  });
+
+  if (!institution) {
+    throw new AppError(404, "Institution does not exist");
+  }
+
+  const existingStudent = await db.student.findUnique({
+    where: {
+      regNo: input.regNo,
+    },
+  });
+
+  if (existingStudent) {
+    throw new AppError(
+      409,
+      "Student with this registration number already exists",
+    );
+  }
+
+  return db.student.create({
+    data: {
+      regNo: input.regNo,
+      name: input.name,
+      email: input.email,
+      institutionCode: input.institutionCode,
+    },
+  });
+}
 
 export const studentRouter = router({
   create: publicProcedure
@@ -16,50 +58,23 @@ export const studentRouter = router({
     )
     .mutation(async ({ input }) => {
       try {
-        const institution = await prisma.institution.findUnique({
-          where: {
-            code: input.institutionCode,
-          },
-        });
-
-        if (!institution) {
-          throw new AppError(404, "Institution does not exist");
-        }
-
-        const existingStudent = await prisma.student.findUnique({
-          where: {
-            regNo: input.regNo,
-          },
-        });
-
-        if (existingStudent) {
-          throw new AppError(
-            409,
-            "Student with this registration number already exists",
-          );
-        }
-
-        return prisma.student.create({
-          data: {
-            regNo: input.regNo,
-            name: input.name,
-            email: input.email,
-            institutionCode: input.institutionCode,
-          },
-        });
+        return await createStudent(input);
       } catch (error) {
         return appErrorToTRPC(error);
       }
     }),
 
-  getInstitutionByRegNo: publicProcedure
+  getInstitutionByRegNo: protectedProcedure
     .input(
       z.object({
         regNo: z.string().trim().min(1),
       }),
     )
-    .query(async ({ input }) => {
+    .query(async ({ input, ctx }) => {
       try {
+        if (ctx.user.type !== "STUDENT" || ctx.user.studentRegNo !== input.regNo) {
+          throw new AppError(401, "You can only access your own student data");
+        }
         const student = await prisma.student.findUnique({
           where: {
             regNo: input.regNo,
@@ -79,14 +94,17 @@ export const studentRouter = router({
       }
     }),
 
-  getCounsellorsByInstitution: publicProcedure
+  getCounsellorsByInstitution: protectedProcedure
     .input(
       z.object({
         institutionCode: z.string().trim().min(1),
       }),
     )
-    .query(async ({ input }) => {
+    .query(async ({ input, ctx }) => {
       try {
+        if (ctx.user.type !== "STUDENT") throw new AppError(401, "Student access required");
+        const student = await prisma.student.findUnique({ where: { regNo: ctx.user.studentRegNo! } });
+        if (!student || student.institutionCode !== input.institutionCode) throw new AppError(401, "Institution access denied");
         const institution = await prisma.institution.findUnique({
           where: {
             code: input.institutionCode,
@@ -122,7 +140,7 @@ export const studentRouter = router({
     }),
 
   // Student books appointment
-  createAppointment: publicProcedure
+  createAppointment: protectedProcedure
     .input(
       z.object({
         studentRegNo: z.string(),
@@ -130,8 +148,9 @@ export const studentRouter = router({
         reason: z.string().min(5),
       }),
     )
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
       try {
+        if (ctx.user.type !== "STUDENT" || ctx.user.studentRegNo !== input.studentRegNo) throw new AppError(401, "You can only create your own appointments");
         const activeAppointment = await prisma.appointment.findFirst({
           where: {
             studentRegNo: input.studentRegNo,
@@ -160,13 +179,14 @@ export const studentRouter = router({
     }),
 
   // Student views their appointments
-  myAppointments: publicProcedure
+  myAppointments: protectedProcedure
     .input(
       z.object({
         studentRegNo: z.string(),
       }),
     )
-    .query(async ({ input }) => {
+    .query(async ({ input, ctx }) => {
+      if (ctx.user.type !== "STUDENT" || ctx.user.studentRegNo !== input.studentRegNo) throw new AppError(401, "You can only access your own appointments");
       return prisma.appointment.findMany({
         where: {
           studentRegNo: input.studentRegNo,
@@ -181,14 +201,15 @@ export const studentRouter = router({
     }),
 
   // Student cancels appointment
-  cancelAppointment: publicProcedure
+  cancelAppointment: protectedProcedure
     .input(
       z.object({
         appointmentId: z.string(),
         studentRegNo: z.string(),
       }),
     )
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
+      if (ctx.user.type !== "STUDENT" || ctx.user.studentRegNo !== input.studentRegNo) throw new AppError(401, "You can only cancel your own appointments");
       const appointment = await prisma.appointment.findFirst({
         where: {
           id: input.appointmentId,

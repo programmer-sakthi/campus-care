@@ -6,7 +6,7 @@ import { toDatetimeLocal } from "../utils/date";
 
 export function useAppointments() {
   const email = useMemo(
-    () => window.localStorage.getItem("email") ?? "sakthi@gmail.com",
+    () => JSON.parse(window.localStorage.getItem("campus-care.session") ?? "null")?.user?.counsellorEmail ?? "",
     [],
   );
   const pendingQuery = useQuery({

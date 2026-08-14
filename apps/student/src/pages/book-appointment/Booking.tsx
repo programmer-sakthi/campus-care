@@ -29,11 +29,8 @@ export default function Booking({ onOpenChat }: BookingProps) {
   const navigate = useNavigate();
 
   const regNo = useMemo(() => {
-    if (typeof window === "undefined") {
-      return "22IT001";
-    }
-
-    return window.localStorage.getItem("regNo") ?? "22IT001";
+    if (typeof window === "undefined") return "";
+    return JSON.parse(window.localStorage.getItem("campus-care.session") ?? "null")?.user?.studentRegNo ?? "";
   }, []);
 
   // Get student's institution

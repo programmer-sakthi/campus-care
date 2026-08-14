@@ -15,7 +15,7 @@ export default function Counsellors() {
       return "SKCET";
     }
 
-    return window.localStorage.getItem("institutionCode") ?? "SKCET";
+    return JSON.parse(window.localStorage.getItem("campus-care.session") ?? "null")?.user?.institutionCode ?? "";
   }, []);
 
   const { data: availableCounsellors } = useQuery(
@@ -39,8 +39,8 @@ export default function Counsellors() {
 
   const cancelInviteMutation = useMutation({
     mutationFn: (email: string) =>
-      trpcClient.counsellor.rejectInvitation.mutate({
-        email,
+      trpcClient.institution.cancelCounsellorInvitation.mutate({
+        counsellorEmail: email,
         institutionCode,
       }),
     onSuccess: () => {

@@ -10,14 +10,14 @@ import { appRouter } from "./router";
 const app = express();
 app.use(cors());
 
-const trpcMiddleware = createTRPCMiddleware(appRouter)
-
-app.use("/trpc", trpcMiddleware);
-
 app.use(
   pinoHttp({
     logger,
   }),
 );
+const trpcMiddleware = createTRPCMiddleware(appRouter)
+
+app.use("/trpc", trpcMiddleware);
+
 
 export { app };

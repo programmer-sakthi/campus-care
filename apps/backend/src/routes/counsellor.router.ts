@@ -2,7 +2,7 @@ import { Prisma, prisma } from "@repo/database";
 import { z } from "zod";
 
 import { AppError } from "../common/errors/AppError";
-import { appErrorToTRPC, publicProcedure, router } from "../trpc";
+import { appErrorToTRPC, protectedProcedure, publicProcedure, router } from "../trpc";
 
 function normalizeCounsellorError(error: unknown): unknown {
   if (
@@ -15,6 +15,21 @@ function normalizeCounsellorError(error: unknown): unknown {
   return error;
 }
 
+export async function createCounsellor(
+  input: {
+    email: string;
+    name?: string;
+  },
+  db: Prisma.TransactionClient | typeof prisma = prisma,
+) {
+  return await db.counsellor.create({
+    data: {
+      email: input.email,
+      name: input.name,
+    },
+  });
+}
+
 export const counsellorRouter = router({
   create: publicProcedure
     .input(
@@ -25,24 +40,20 @@ export const counsellorRouter = router({
     )
     .mutation(async ({ input }) => {
       try {
-        return await prisma.counsellor.create({
-          data: {
-            email: input.email,
-            name: input.name,
-          },
-        });
+        return await createCounsellor(input);
       } catch (error) {
         return appErrorToTRPC(normalizeCounsellorError(error));
       }
     }),
 
-  pendingInvitations: publicProcedure
+  pendingInvitations: protectedProcedure
     .input(
       z.object({
         email: z.string().email(),
       }),
     )
-    .query(async ({ input }) => {
+    .query(async ({ input, ctx }) => {
+      if (ctx.user.type !== "COUNSELLOR" || ctx.user.counsellorEmail !== input.email) throw new AppError(401, "Counsellor access required");
       return prisma.institutionCounsellor.findMany({
         where: {
           counsellorEmail: input.email,
@@ -57,13 +68,14 @@ export const counsellorRouter = router({
       });
     }),
 
-  joinedInstitutions: publicProcedure
+  joinedInstitutions: protectedProcedure
     .input(
       z.object({
         email: z.string().email(),
       }),
     )
-    .query(async ({ input }) => {
+    .query(async ({ input, ctx }) => {
+      if (ctx.user.type !== "COUNSELLOR" || ctx.user.counsellorEmail !== input.email) throw new AppError(401, "Counsellor access required");
       return prisma.institutionCounsellor.findMany({
         where: {
           counsellorEmail: input.email,
@@ -78,15 +90,16 @@ export const counsellorRouter = router({
       });
     }),
 
-  leaveInstitution: publicProcedure
+  leaveInstitution: protectedProcedure
     .input(
       z.object({
         email: z.string().trim().email(),
         institutionCode: z.string().trim().min(1),
       }),
     )
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
       try {
+        if (ctx.user.type !== "COUNSELLOR" || ctx.user.counsellorEmail !== input.email) throw new AppError(401, "Counsellor access required");
         const membership = await prisma.institutionCounsellor.findUnique({
           where: {
             institutionCode_counsellorEmail: {
@@ -123,15 +136,16 @@ export const counsellorRouter = router({
       }
     }),
 
-  acceptInvitation: publicProcedure
+  acceptInvitation: protectedProcedure
     .input(
       z.object({
         email: z.string().trim().email(),
         institutionCode: z.string().trim().min(1),
       }),
     )
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
       try {
+        if (ctx.user.type !== "COUNSELLOR" || ctx.user.counsellorEmail !== input.email) throw new AppError(401, "Counsellor access required");
         const invitation = await prisma.institutionCounsellor.findUnique({
           where: {
             institutionCode_counsellorEmail: {
@@ -172,15 +186,16 @@ export const counsellorRouter = router({
       }
     }),
 
-  rejectInvitation: publicProcedure
+  rejectInvitation: protectedProcedure
     .input(
       z.object({
         email: z.string().trim().email(),
         institutionCode: z.string().trim().min(1),
       }),
     )
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
       try {
+        if (ctx.user.type !== "COUNSELLOR" || ctx.user.counsellorEmail !== input.email) throw new AppError(401, "Counsellor access required");
         const invitation = await prisma.institutionCounsellor.findUnique({
           where: {
             institutionCode_counsellorEmail: {
@@ -222,13 +237,14 @@ export const counsellorRouter = router({
     }),
 
   // Counsellor sees pending requests
-  appointmentRequests: publicProcedure
+  appointmentRequests: protectedProcedure
     .input(
       z.object({
         counsellorEmail: z.string().email(),
       }),
     )
-    .query(async ({ input }) => {
+    .query(async ({ input, ctx }) => {
+      if (ctx.user.type !== "COUNSELLOR" || ctx.user.counsellorEmail !== input.counsellorEmail) throw new AppError(401, "Counsellor access required");
       return prisma.appointment.findMany({
         where: {
           counsellorEmail: input.counsellorEmail,
@@ -244,7 +260,7 @@ export const counsellorRouter = router({
     }),
 
   // Counsellor approves and schedules
-  approveAppointment: publicProcedure
+  approveAppointment: protectedProcedure
     .input(
       z.object({
         appointmentId: z.string(),
@@ -257,7 +273,8 @@ export const counsellorRouter = router({
         durationMinutes: z.number().min(15).max(120).default(30),
       }),
     )
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
+      if (ctx.user.type !== "COUNSELLOR" || ctx.user.counsellorEmail !== input.counsellorEmail) throw new AppError(401, "Counsellor access required");
       const appointment = await prisma.appointment.findFirst({
         where: {
           id: input.appointmentId,
@@ -288,7 +305,7 @@ export const counsellorRouter = router({
     }),
 
   // Counsellor rejects appointment
-  rejectAppointment: publicProcedure
+  rejectAppointment: protectedProcedure
     .input(
       z.object({
         appointmentId: z.string(),
@@ -298,7 +315,8 @@ export const counsellorRouter = router({
         rejectionReason: z.string().min(5).optional(),
       }),
     )
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
+      if (ctx.user.type !== "COUNSELLOR" || ctx.user.counsellorEmail !== input.counsellorEmail) throw new AppError(401, "Counsellor access required");
       const appointment = await prisma.appointment.findFirst({
         where: {
           id: input.appointmentId,
@@ -325,13 +343,14 @@ export const counsellorRouter = router({
     }),
 
   // Counsellor views sessions that have been scheduled but not completed.
-  scheduledAppointments: publicProcedure
+  scheduledAppointments: protectedProcedure
     .input(
       z.object({
         counsellorEmail: z.string().email(),
       }),
     )
-    .query(async ({ input }) => {
+    .query(async ({ input, ctx }) => {
+      if (ctx.user.type !== "COUNSELLOR" || ctx.user.counsellorEmail !== input.counsellorEmail) throw new AppError(401, "Counsellor access required");
       return prisma.appointment.findMany({
         where: {
           counsellorEmail: input.counsellorEmail,
@@ -350,13 +369,14 @@ export const counsellorRouter = router({
     }),
 
   // Counsellor views completed sessions and their notes.
-  completedAppointments: publicProcedure
+  completedAppointments: protectedProcedure
     .input(
       z.object({
         counsellorEmail: z.string().email(),
       }),
     )
-    .query(async ({ input }) => {
+    .query(async ({ input, ctx }) => {
+      if (ctx.user.type !== "COUNSELLOR" || ctx.user.counsellorEmail !== input.counsellorEmail) throw new AppError(401, "Counsellor access required");
       return prisma.appointment.findMany({
         where: {
           counsellorEmail: input.counsellorEmail,
@@ -372,7 +392,7 @@ export const counsellorRouter = router({
     }),
 
   // Complete session
-  completeAppointment: publicProcedure
+  completeAppointment: protectedProcedure
     .input(
       z.object({
         appointmentId: z.string(),
@@ -382,7 +402,8 @@ export const counsellorRouter = router({
         sessionNote: z.string().min(5),
       }),
     )
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
+      if (ctx.user.type !== "COUNSELLOR" || ctx.user.counsellorEmail !== input.counsellorEmail) throw new AppError(401, "Counsellor access required");
       const appointment = await prisma.appointment.findFirst({
         where: {
           id: input.appointmentId,

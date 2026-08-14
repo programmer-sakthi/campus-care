@@ -7,6 +7,34 @@ datasource db {
   provider = "postgresql"
 }
 
+enum UserType {
+  STUDENT
+  COUNSELLOR
+  INSTITUTION
+}
+
+model User {
+  id String @id @default(cuid())
+
+  email String @unique
+  passwordHash String
+
+  type UserType
+
+  studentRegNo String? @unique
+  counsellorEmail String? @unique
+  institutionCode String? @unique
+
+  student Student? @relation( fields: [studentRegNo], references: [regNo], onDelete: Cascade )
+
+  counsellor Counsellor? @relation( fields: [counsellorEmail], references: [email], onDelete: Cascade )
+
+  institution Institution? @relation( fields: [institutionCode], references: [code], onDelete: Cascade )
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 model Institution {
   code  String  @id
   email String  @unique
@@ -14,18 +42,24 @@ model Institution {
 
   counsellors InstitutionCounsellor[]
   students    Student[]
+  user User?
 }
 
 model Student {
-  regNo String  @id
+  regNo String @id
   name  String?
   email String? @unique
 
   institutionCode String
-  institution     Institution @relation(fields: [institutionCode], references: [code])
+  institution Institution @relation( fields: [institutionCode], references: [code] )
 
   appointments Appointment[]
   dailyCheckIns DailyCheckIn[]
+
+
+  conversations Conversation[]
+
+  user User?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -38,6 +72,9 @@ model Counsellor {
   institutions InstitutionCounsellor[]
   appointments Appointment[]
 
+  conversations Conversation[]
+
+  user User?
   createdAt DateTime @default(now())
 }
 
@@ -102,6 +139,51 @@ model Appointment {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
+
+enum MessageSenderType {
+  STUDENT
+  COUNSELLOR
+}
+
+model Conversation {
+  id String @id @default(cuid())
+
+  studentRegNo String
+  counsellorEmail String
+
+  student Student @relation(  fields: [studentRegNo], references: [regNo], onDelete: Cascade )
+
+  counsellor Counsellor @relation( fields: [counsellorEmail], references: [email], onDelete: Cascade )
+
+  messages Message[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([studentRegNo, counsellorEmail])
+  @@index([studentRegNo])
+  @@index([counsellorEmail])
+}
+
+
+model Message {
+  id String @id @default(cuid())
+
+  conversationId String
+  senderType MessageSenderType
+
+  content String @db.Text
+
+  conversation Conversation @relation( fields: [conversationId], references: [id], onDelete: Cascade )
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([conversationId, createdAt])
+}
+
+
 
 enum MoodTime {
   MORNING

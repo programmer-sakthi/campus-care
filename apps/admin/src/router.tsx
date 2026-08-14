@@ -8,6 +8,7 @@ import Counsellors from "./pages/Counsellors/Counsellors";
 import Dashboard from "./pages/Dashboard/Dashboard";
 import Students from "./pages/Students/Students";
 import Insights from "./pages/Insights/Insights";
+import ProtectedLayout from "./layouts/ProtectedLayout";
 
 export const router = createBrowserRouter([
   {
@@ -27,8 +28,11 @@ export const router = createBrowserRouter([
   },
 
   {
-    Component: RootLayout,
+    Component: ProtectedLayout,
     children: [
+      {
+        Component: RootLayout,
+        children: [
       {
         path: "counsellors",
         Component: Counsellors,
@@ -45,8 +49,8 @@ export const router = createBrowserRouter([
         path: "insights",
         Component: Insights
       }
-
-
+        ],
+      },
     ]
 
 

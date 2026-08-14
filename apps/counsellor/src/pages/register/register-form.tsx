@@ -1,5 +1,6 @@
 import React, { useRef, useState } from "react"
 import { cn } from "@repo/ui/lib/utils"
+import { useMutation } from "@tanstack/react-query"
 import { Button } from "@repo/ui/components/button"
 import {
   Field,
@@ -8,7 +9,7 @@ import {
   FieldLabel,
 } from "@repo/ui/components/field"
 import { Input } from "@repo/ui/components/input"
-import { registerCounsellor } from "./api"
+import { trpc } from "../../lib/trpc"
 
 export function RegisterForm({
   className,
@@ -18,6 +19,20 @@ export function RegisterForm({
   const [error, setError] = useState<string | null>(null)
   const formRef = useRef<HTMLFormElement>(null)
 
+  const registerMutation = useMutation(
+    trpc.auth.register.mutationOptions({
+      onSuccess: () => {
+        setStatus("idle")
+        setError(null)
+        formRef.current?.reset()
+      },
+      onError: (err: any) => {
+        setStatus("error")
+        setError(err?.message ?? "Registration failed")
+      },
+    }),
+  )
+
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setStatus("saving")
@@ -25,16 +40,18 @@ export function RegisterForm({
 
     const formData = new FormData(event.currentTarget)
     const email = formData.get("email") as string
+    const password = formData.get("password") as string
     const name = (formData.get("name") as string) || undefined
 
-    try {
-      await registerCounsellor({ email, name })
-      setStatus("idle")
-      formRef.current?.reset()
-    } catch (err) {
-      setStatus("error")
-      setError(err instanceof Error ? err.message : "Something went wrong")
-    }
+    setStatus("saving")
+
+    registerMutation.mutate({
+      email,
+      password,
+      type: "COUNSELLOR",
+      counsellorEmail: email,
+      name,
+    })
   }
 
   return (
@@ -63,6 +80,11 @@ export function RegisterForm({
         </Field>
 
         <Field>
+          <FieldLabel htmlFor="password">Password</FieldLabel>
+          <Input id="password" name="password" type="password" placeholder="Create a password" required />
+        </Field>
+
+        <Field>
           <div className="flex items-center">
             <FieldLabel htmlFor="counsellor-name">Counsellor name</FieldLabel>
           </div>
@@ -74,8 +96,8 @@ export function RegisterForm({
         </Field>
 
         <Field>
-          <Button type="submit" disabled={status === "saving"}>
-            {status === "saving" ? "Registering…" : "Register"}
+          <Button type="submit" disabled={status === "saving" || registerMutation.isPending}>
+            {status === "saving" || registerMutation.isPending ? "Registering…" : "Register"}
           </Button>
         </Field>
 

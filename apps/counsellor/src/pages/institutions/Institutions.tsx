@@ -14,7 +14,7 @@ export default function Institutions() {
       return "sakthi@gmail.com";
     }
 
-    return window.localStorage.getItem("email") ?? "sakthi@gmail.com";
+    return JSON.parse(window.localStorage.getItem("campus-care.session") ?? "null")?.user?.counsellorEmail ?? "";
   }, []);
 
   const pendingInvitationsQuery = useQuery(
