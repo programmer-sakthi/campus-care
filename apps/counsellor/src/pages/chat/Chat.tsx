@@ -1,23 +1,16 @@
-import { useMemo, useState } from "react";
-import { Search, Send, Building2, CalendarClock } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { skipToken, useMutation, useQuery } from "@tanstack/react-query";
+import { useSubscription } from "@trpc/tanstack-react-query";
+import { Search, Send, Building2 } from "lucide-react";
 import { Button } from "@repo/ui/components/button";
 import { Input } from "@repo/ui/components/input";
-import { Badge } from "@repo/ui/components/badge";
 import { ScrollArea } from "@repo/ui/components/scroll-area";
 import { Avatar, AvatarFallback } from "@repo/ui/components/avatar";
-import {
-  appointments,
-  conversations as initialConversations,
-  institutionOf,
-  students,
-  type Message,
-} from "./mock-data.ts";
-
+import { trpc } from "../../lib/trpc";
+import { getSession } from "../../lib/auth";
 
 // NOTE ON TYPE: add Fraunces to your project (e.g. in index.html):
 // <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&display=swap" rel="stylesheet">
-// Every person's name in this app renders in Fraunces — everything the
-// system generates (labels, timestamps, statuses) stays in the sans/mono UI type.
 const nameFont = { fontFamily: "'Fraunces', Georgia, serif" };
 
 function formatTime(iso: string) {
@@ -30,56 +23,96 @@ function formatTime(iso: string) {
 }
 
 function formatClock(iso: string) {
-  return new Date(iso).toLocaleTimeString(undefined, {
-    hour: "numeric",
-    minute: "2-digit",
-  });
+  return new Date(iso).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
 }
 
+function initialsOf(nameOrEmail: string) {
+  return nameOrEmail.trim().slice(0, 2).toUpperCase();
+}
+
+type ChatMessage = {
+  id: string;
+  senderType: "STUDENT" | "COUNSELLOR";
+  content: string;
+  createdAt: string;
+};
+
 export default function Chat() {
-  const [conversations, setConversations] = useState(initialConversations);
-  const [selectedId, setSelectedId] = useState(students[0].id);
+  const token = getSession()?.token;
+
+  const conversationsQuery = useQuery(trpc.chat.conversations.queryOptions());
+  const conversations = conversationsQuery.data ?? [];
+
   const [query, setQuery] = useState("");
+  const [selectedId, setSelectedId] = useState<string | undefined>();
   const [draft, setDraft] = useState("");
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const rows = useMemo(() => {
-    return students
-      .map((student) => {
-        const thread = conversations[student.id] ?? [];
-        const last = thread[thread.length - 1];
-        const appointment = appointments.find((a) => a.studentId === student.id);
-        return { student, last, appointment };
-      })
-      .filter(({ student }) =>
-        student.name.toLowerCase().includes(query.toLowerCase())
-      )
-      .sort((a, b) => {
-        const ta = a.last ? new Date(a.last.time).getTime() : 0;
-        const tb = b.last ? new Date(b.last.time).getTime() : 0;
-        return tb - ta;
-      });
-  }, [conversations, query]);
+  useEffect(() => {
+    if (!selectedId && conversations.length > 0) {
+      setSelectedId(conversations[0]!.id);
+    }
+  }, [conversations, selectedId]);
 
-  const selectedStudent = students.find((s) => s.id === selectedId)!;
-  const selectedInstitution = institutionOf(selectedStudent.institutionId);
-  const selectedAppointment = appointments.find((a) => a.studentId === selectedId);
-  const thread = conversations[selectedId] ?? [];
+  const selected = conversations.find((c) => c.id === selectedId);
+
+  const rows = useMemo(
+    () =>
+      conversations.filter((c) =>
+        (c.student.name ?? c.student.regNo).toLowerCase().includes(query.toLowerCase()),
+      ),
+    [conversations, query],
+  );
+
+  const messagesQuery = useQuery(
+    trpc.chat.messages.queryOptions(
+      selectedId ? { conversationId: selectedId, limit: 50 } : skipToken,
+    ),
+  );
+
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+
+  useEffect(() => {
+    setMessages(messagesQuery.data?.messages ?? []);
+  }, [messagesQuery.data, selectedId]);
+
+  // Live updates: the server echoes every new message (including ones this
+  // counsellor just sent) back to every subscriber of the conversation.
+  useSubscription(
+    trpc.chat.onMessage.subscriptionOptions(
+      selectedId && token ? { conversationId: selectedId, token, lastEventId: null } : skipToken,
+      {
+        onData: (event) => {
+          const message = event.data as ChatMessage;
+          setMessages((prev) => (prev.some((m) => m.id === message.id) ? prev : [...prev, message]));
+        },
+        onError: (err) => console.error("Chat subscription error:", err),
+      },
+    ),
+  );
+
+  const sendMessage = useMutation(trpc.chat.sendMessage.mutationOptions());
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+  }, [messages.length, selectedId]);
 
   function handleSend() {
     const text = draft.trim();
-    if (!text) return;
-    const message: Message = {
-      id: `m-${Date.now()}`,
-      sender: "counsellor",
-      text,
-      time: new Date().toISOString(),
-    };
-    setConversations((prev) => ({
-      ...prev,
-      [selectedId]: [...(prev[selectedId] ?? []), message],
-    }));
+    if (!text || !selectedId) return;
+    sendMessage.mutate({ conversationId: selectedId, content: text });
     setDraft("");
   }
+
+  if (!selected) {
+    return (
+      <div className="mx-auto flex h-screen max-w-6xl items-center justify-center px-4 pt-28 text-sm text-neutral-500">
+        No conversations yet — once a student reaches out, they'll show up here.
+      </div>
+    );
+  }
+
+  const studentName = selected.student.name ?? selected.student.regNo;
 
   return (
     <div className="mx-auto flex h-screen max-w-6xl gap-0 px-4 pb-6 pt-28">
@@ -102,13 +135,14 @@ export default function Chat() {
 
         <ScrollArea className="flex-1">
           <div className="flex flex-col">
-            {rows.map(({ student, last, appointment }) => {
-              const institution = institutionOf(student.institutionId);
-              const active = student.id === selectedId;
+            {rows.map((c) => {
+              const last = c.messages[0];
+              const name = c.student.name ?? c.student.regNo;
+              const active = c.id === selectedId;
               return (
                 <button
-                  key={student.id}
-                  onClick={() => setSelectedId(student.id)}
+                  key={c.id}
+                  onClick={() => setSelectedId(c.id)}
                   className={[
                     "flex items-start gap-3 border-b border-neutral-100 px-4 py-3 text-left transition-colors",
                     active ? "bg-neutral-50" : "hover:bg-neutral-50/60",
@@ -116,7 +150,7 @@ export default function Chat() {
                 >
                   <Avatar className="h-10 w-10 shrink-0">
                     <AvatarFallback className="bg-[#EDF2EF] text-sm font-medium text-[#3F5A4E]">
-                      {student.initials}
+                      {initialsOf(name)}
                     </AvatarFallback>
                   </Avatar>
                   <div className="min-w-0 flex-1">
@@ -125,27 +159,19 @@ export default function Chat() {
                         className="truncate text-[15px] font-medium text-neutral-900"
                         style={nameFont}
                       >
-                        {student.name}
+                        {name}
                       </span>
                       {last && (
                         <span className="shrink-0 font-mono text-[11px] text-neutral-400">
-                          {formatClock(last.time)}
+                          {formatClock(last.createdAt)}
                         </span>
                       )}
                     </div>
-                    <p className="mt-0.5 truncate text-xs text-neutral-500">
-                      {institution.shortName}
-                    </p>
                     {last && (
                       <p className="mt-1 truncate text-sm text-neutral-500">
-                        {last.sender === "counsellor" ? "You: " : ""}
-                        {last.text}
+                        {last.senderType === "COUNSELLOR" ? "You: " : ""}
+                        {last.content}
                       </p>
-                    )}
-                    {appointment?.status === "pending" && (
-                      <Badge className="mt-1.5 border-none bg-[#F3E4C9] text-[10px] font-medium text-[#7A5A17] hover:bg-[#F3E4C9]">
-                        Needs scheduling
-                      </Badge>
                     )}
                   </div>
                 </button>
@@ -161,71 +187,47 @@ export default function Chat() {
           <div className="flex items-center gap-3">
             <Avatar className="h-10 w-10">
               <AvatarFallback className="bg-[#EDF2EF] text-sm font-medium text-[#3F5A4E]">
-                {selectedStudent.initials}
+                {initialsOf(studentName)}
               </AvatarFallback>
             </Avatar>
             <div>
               <h2 className="text-base font-medium text-neutral-900" style={nameFont}>
-                {selectedStudent.name}
+                {studentName}
               </h2>
               <div className="mt-0.5 flex items-center gap-1.5 text-xs text-neutral-500">
                 <Building2 className="h-3.5 w-3.5" />
-                {selectedInstitution.name}
+                {selected.student.institutionCode}
               </div>
             </div>
           </div>
-          {selectedAppointment && (
-            <Badge
-              variant="outline"
-              className={[
-                "gap-1.5 border-neutral-200 text-xs font-medium",
-                selectedAppointment.status === "scheduled" && "text-[#3F5A4E]",
-                selectedAppointment.status === "pending" && "text-[#7A5A17]",
-                selectedAppointment.status === "completed" && "text-neutral-500",
-              ].join(" ")}
-            >
-              <CalendarClock className="h-3.5 w-3.5" />
-              {selectedAppointment.status === "scheduled" && selectedAppointment.scheduledAt
-                ? `Scheduled · ${formatTime(selectedAppointment.scheduledAt)}`
-                : selectedAppointment.status === "pending"
-                ? "Awaiting a time"
-                : "Session completed"}
-            </Badge>
-          )}
         </header>
-
-        {selectedAppointment && (
-          <div className="border-b border-neutral-100 bg-neutral-50/60 px-6 py-2.5 text-sm text-neutral-600">
-            <span className="font-medium text-neutral-700">Reason for applying: </span>
-            {selectedAppointment.reason}
-          </div>
-        )}
 
         <ScrollArea className="flex-1 px-6 py-5">
           <div className="flex flex-col gap-4">
-            {thread.map((message) => (
-              <div
-                key={message.id}
-                className={[
-                  "flex flex-col",
-                  message.sender === "counsellor" ? "items-end" : "items-start",
-                ].join(" ")}
-              >
+            {messages.map((message) => {
+              const isCounsellor = message.senderType === "COUNSELLOR";
+              return (
                 <div
-                  className={[
-                    "max-w-[70%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed",
-                    message.sender === "counsellor"
-                      ? "rounded-br-sm bg-neutral-900 text-white"
-                      : "rounded-bl-sm bg-neutral-100 text-neutral-800",
-                  ].join(" ")}
+                  key={message.id}
+                  className={["flex flex-col", isCounsellor ? "items-end" : "items-start"].join(" ")}
                 >
-                  {message.text}
+                  <div
+                    className={[
+                      "max-w-[70%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed",
+                      isCounsellor
+                        ? "rounded-br-sm bg-neutral-900 text-white"
+                        : "rounded-bl-sm bg-neutral-100 text-neutral-800",
+                    ].join(" ")}
+                  >
+                    {message.content}
+                  </div>
+                  <span className="mt-1 font-mono text-[10px] text-neutral-400">
+                    {formatTime(message.createdAt)}
+                  </span>
                 </div>
-                <span className="mt-1 font-mono text-[10px] text-neutral-400">
-                  {formatTime(message.time)}
-                </span>
-              </div>
-            ))}
+              );
+            })}
+            <div ref={messagesEndRef} />
           </div>
         </ScrollArea>
 
@@ -236,7 +238,7 @@ export default function Chat() {
             onKeyDown={(e) => {
               if (e.key === "Enter") handleSend();
             }}
-            placeholder={`Message ${selectedStudent.name.split(" ")[0]}...`}
+            placeholder={`Message ${studentName.split(" ")[0]}...`}
             className="flex-1"
           />
           <Button onClick={handleSend} size="icon" className="bg-neutral-900 hover:bg-neutral-800">

@@ -16,7 +16,6 @@ interface Counsellor {
 
 interface CounsellorCardProps {
   counsellor: Counsellor;
-  latestApplication?: Application;
   activeApplication?: Application;
   onRequest: () => void;
   onOpenChat: () => void;
@@ -34,7 +33,6 @@ function getInitials(name: string | null) {
 
 export function CounsellorCard({
   counsellor,
-  latestApplication,
   activeApplication,
   onRequest,
   onOpenChat,
@@ -67,7 +65,6 @@ export function CounsellorCard({
           <Button
             variant="outline"
             className="flex-1 gap-1.5 border-neutral-200"
-            disabled={!latestApplication}
             onClick={onOpenChat}
           >
             <MessageSquare className="h-4 w-4" />

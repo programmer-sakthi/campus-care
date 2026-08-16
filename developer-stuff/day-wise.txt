@@ -11,33 +11,35 @@ Day 2 :
 - Counsellor Invitation frontend ( Admin app and Counsellor app ) ✅ 
 - Counsellor booking frontend ( Student app and Counsellor app ) ✅ 
 - Counsellor-Student chat frontend ( Student app and Counsellor app ) ✅
+- Daily journal frontend ✅ 
 
 Day 3 : 
 
 - Counsellor Invitation backend ✅
-- Counsellor booking backend 
-- Counsellor-Student chat backend 
+- Counsellor booking backend ✅
 
+Day 4 :
 
-Day 4 : 
-
-- Daily journal frontend ✅ 
-- Daily journal backend 
+- authentication ( store details in local storage for now ) ✅
 
 Day 5 : 
+
+- Counsellor-Student chat backend ✅
+
+
+Day 6 : 
+
+- train an model with RAG data 
+- Daily journal backend 
+
+Day 7 : 
 
 - Periodical assesments frontend 
 - Periodical assesments backend 
 
-Day 6 :
+Day 8 : 
 
-- authentication ( store details in local storage for now )
-
-Day 7 : 
-
-- chatbot
-
-
+- Chat bot
 
 
 
