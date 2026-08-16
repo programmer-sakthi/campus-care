@@ -15,16 +15,12 @@ import {
   Users,
 } from "lucide-react";
 
-interface BookingProps {
-  onOpenChat?: (applicationId: string) => void;
-}
-
 interface DBCounsellor {
   email: string;
   name: string | null;
 }
 
-export default function Booking({ onOpenChat }: BookingProps) {
+export default function Booking() {
   const [bookingTarget, setBookingTarget] = useState<DBCounsellor | null>(null);
   const navigate = useNavigate();
 
@@ -81,18 +77,6 @@ export default function Booking({ onOpenChat }: BookingProps) {
     });
   }, [appointments]);
 
-  const latestApplicationByCounsellor = useMemo(() => {
-    const map = new Map<string, Application>();
-
-    applications.forEach((application) => {
-      if (!map.has(application.counsellorId)) {
-        map.set(application.counsellorId, application);
-      }
-    });
-
-    return map;
-  }, [applications]);
-
   const activeApplicationByCounsellor = useMemo(() => {
     const map = new Map<string, Application>();
 
@@ -117,6 +101,12 @@ export default function Booking({ onOpenChat }: BookingProps) {
     }),
   );
 
+  const openConversation = useMutation(
+    trpc.chat.openConversation.mutationOptions({
+      onSuccess: () => navigate("/chat"),
+    }),
+  );
+
   function handleSubmitRequest(counsellor: DBCounsellor, reason: string) {
     createAppointment.mutate({
       studentRegNo: regNo,
@@ -125,13 +115,8 @@ export default function Booking({ onOpenChat }: BookingProps) {
     });
   }
 
-  function handleOpenChat(application: Application) {
-    if (onOpenChat) {
-      onOpenChat(application.id);
-      return;
-    }
-
-    navigate("/chat");
+  function handleOpenChat(counsellorEmail: string) {
+    openConversation.mutate({ withId: counsellorEmail });
   }
 
   return (
@@ -174,7 +159,7 @@ export default function Booking({ onOpenChat }: BookingProps) {
               return (
                 <button
                   key={application.id}
-                  onClick={() => handleOpenChat(application)}
+                  onClick={() => handleOpenChat(application.counsellorId)}
                   className="group flex items-center justify-between gap-3 rounded-xl border border-neutral-200 bg-white px-4 py-3.5 text-left shadow-sm transition-all hover:border-neutral-300 hover:bg-neutral-50 hover:shadow"
                 >
                   <div className="flex min-w-0 items-center gap-3">
@@ -228,9 +213,6 @@ export default function Booking({ onOpenChat }: BookingProps) {
         ) : (
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             {availableCounsellors?.map((counsellor) => {
-              const latestApplication = latestApplicationByCounsellor.get(
-                counsellor.email,
-              );
               const activeApplication = activeApplicationByCounsellor.get(
                 counsellor.email,
               );
@@ -239,14 +221,9 @@ export default function Booking({ onOpenChat }: BookingProps) {
                 <CounsellorCard
                   key={counsellor.email}
                   counsellor={counsellor}
-                  latestApplication={latestApplication}
                   activeApplication={activeApplication}
                   onRequest={() => setBookingTarget(counsellor)}
-                  onOpenChat={() => {
-                    if (latestApplication) {
-                      handleOpenChat(latestApplication);
-                    }
-                  }}
+                  onOpenChat={() => handleOpenChat(counsellor.email)}
                 />
               );
             })}
