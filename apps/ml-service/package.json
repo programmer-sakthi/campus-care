@@ -1,0 +1,8 @@
+{
+  "name": "ml-service",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "uv run uvicorn ml_service.main:app --reload --port 8001",
+    "build": "echo 'No build step for Python' && exit 0"
+  }
+}
