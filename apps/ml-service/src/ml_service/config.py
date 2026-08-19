@@ -24,6 +24,9 @@ class Settings(BaseSettings):
     kb_data_dir: Path = PACKAGE_DIR / "data"
     kb_storage_dir: Path = PACKAGE_DIR / "storage" / "knowledge_base"
     kb_top_k: int = 3
+    # The data directory is polled so adding/replacing a PDF never delays a
+    # chat request. Set to 0 to disable automatic background syncing.
+    kb_sync_interval_seconds: float = 25.0
 
     # --- Long-term memory (per-student vector store) ---
     memory_storage_dir: Path = PACKAGE_DIR / "storage" / "memory"
