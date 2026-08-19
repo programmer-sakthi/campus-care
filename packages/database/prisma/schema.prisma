@@ -16,20 +16,20 @@ enum UserType {
 model User {
   id String @id @default(cuid())
 
-  email String @unique
+  email        String @unique
   passwordHash String
 
   type UserType
 
-  studentRegNo String? @unique
+  studentRegNo    String? @unique
   counsellorEmail String? @unique
   institutionCode String? @unique
 
-  student Student? @relation( fields: [studentRegNo], references: [regNo], onDelete: Cascade )
+  student Student? @relation(fields: [studentRegNo], references: [regNo], onDelete: Cascade)
 
-  counsellor Counsellor? @relation( fields: [counsellorEmail], references: [email], onDelete: Cascade )
+  counsellor Counsellor? @relation(fields: [counsellorEmail], references: [email], onDelete: Cascade)
 
-  institution Institution? @relation( fields: [institutionCode], references: [code], onDelete: Cascade )
+  institution Institution? @relation(fields: [institutionCode], references: [code], onDelete: Cascade)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -42,22 +42,23 @@ model Institution {
 
   counsellors InstitutionCounsellor[]
   students    Student[]
-  user User?
+  user        User?
 }
 
 model Student {
-  regNo String @id
+  regNo String  @id
   name  String?
   email String? @unique
 
   institutionCode String
-  institution Institution @relation( fields: [institutionCode], references: [code] )
+  institution     Institution @relation(fields: [institutionCode], references: [code])
 
-  appointments Appointment[]
+  appointments  Appointment[]
   dailyCheckIns DailyCheckIn[]
 
-
   conversations Conversation[]
+
+  chatbotChats ChatbotChat[]
 
   user User?
 
@@ -66,7 +67,7 @@ model Student {
 }
 
 model Counsellor {
-  email String @id
+  email String  @id
   name  String?
 
   institutions InstitutionCounsellor[]
@@ -74,7 +75,7 @@ model Counsellor {
 
   conversations Conversation[]
 
-  user User?
+  user      User?
   createdAt DateTime @default(now())
 }
 
@@ -94,7 +95,7 @@ model InstitutionCounsellor {
 
   noOfSessions Int @default(0)
 
-  invitedAt DateTime @default(now())
+  invitedAt DateTime  @default(now())
   joinedAt  DateTime?
 
   institution Institution @relation(fields: [institutionCode], references: [code])
@@ -115,21 +116,21 @@ enum AppointmentStatus {
 model Appointment {
   id String @id @default(cuid())
 
-  studentRegNo String
+  studentRegNo    String
   counsellorEmail String
 
   reason String
 
   status AppointmentStatus @default(PENDING)
 
-  scheduledAt DateTime?
-  durationMinutes Int @default(30)
+  scheduledAt     DateTime?
+  durationMinutes Int       @default(30)
 
   rejectionReason String?
-  sessionNote String?
+  sessionNote     String?
 
-  requestedAt DateTime @default(now())
-  approvedAt DateTime?
+  requestedAt DateTime  @default(now())
+  approvedAt  DateTime?
   completedAt DateTime?
 
   student Student @relation(fields: [studentRegNo], references: [regNo])
@@ -140,7 +141,6 @@ model Appointment {
   updatedAt DateTime @updatedAt
 }
 
-
 enum MessageSenderType {
   STUDENT
   COUNSELLOR
@@ -149,12 +149,12 @@ enum MessageSenderType {
 model Conversation {
   id String @id @default(cuid())
 
-  studentRegNo String
+  studentRegNo    String
   counsellorEmail String
 
-  student Student @relation(  fields: [studentRegNo], references: [regNo], onDelete: Cascade )
+  student Student @relation(fields: [studentRegNo], references: [regNo], onDelete: Cascade)
 
-  counsellor Counsellor @relation( fields: [counsellorEmail], references: [email], onDelete: Cascade )
+  counsellor Counsellor @relation(fields: [counsellorEmail], references: [email], onDelete: Cascade)
 
   messages Message[]
 
@@ -166,24 +166,21 @@ model Conversation {
   @@index([counsellorEmail])
 }
 
-
 model Message {
   id String @id @default(cuid())
 
   conversationId String
-  senderType MessageSenderType
+  senderType     MessageSenderType
 
   content String @db.Text
 
-  conversation Conversation @relation( fields: [conversationId], references: [id], onDelete: Cascade )
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([conversationId, createdAt])
 }
-
-
 
 enum MoodTime {
   MORNING
@@ -204,7 +201,7 @@ model DailyCheckIn {
 
   studentRegNo String
 
-  student Student @relation( fields: [studentRegNo],references: [regNo], onDelete: Cascade )
+  student Student @relation(fields: [studentRegNo], references: [regNo], onDelete: Cascade)
 
   date DateTime @db.Date
 
@@ -215,7 +212,7 @@ model DailyCheckIn {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  moods MoodEntry[]
+  moods     MoodEntry[]
   responses QuestionResponse[]
 
   @@unique([studentRegNo, date])
@@ -227,7 +224,7 @@ model MoodEntry {
 
   dailyCheckInId String
 
-  dailyCheckIn DailyCheckIn @relation(fields: [dailyCheckInId],references: [id],onDelete: Cascade)
+  dailyCheckIn DailyCheckIn @relation(fields: [dailyCheckInId], references: [id], onDelete: Cascade)
 
   time MoodTime
   mood Mood
@@ -242,7 +239,7 @@ model CheckInQuestion {
   id String @id @default(cuid())
 
   question String
-  active Boolean @default(true)
+  active   Boolean @default(true)
 
   responses QuestionResponse[]
 
@@ -255,11 +252,11 @@ model QuestionResponse {
 
   dailyCheckInId String
 
-  dailyCheckIn DailyCheckIn @relation(fields: [dailyCheckInId],references: [id],onDelete: Cascade)
+  dailyCheckIn DailyCheckIn @relation(fields: [dailyCheckInId], references: [id], onDelete: Cascade)
 
   questionId String
 
-  question CheckInQuestion @relation( fields: [questionId], references: [id] )
+  question CheckInQuestion @relation(fields: [questionId], references: [id])
 
   answer String @db.Text
 
@@ -267,4 +264,51 @@ model QuestionResponse {
 
   @@unique([dailyCheckInId, questionId])
   @@index([dailyCheckInId])
+}
+
+enum ChatbotRole {
+  USER
+  ASSISTANT
+}
+
+enum RiskLevel {
+  NONE
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+// One continuous "Emora" companion thread per student. Long-term facts
+// extracted from these messages live in ml-service's vector DB (keyed by
+// studentRegNo), not here — this table is just the durable message log.
+model ChatbotChat {
+  id String @id @default(cuid())
+
+  studentRegNo String
+  student      Student @relation(fields: [studentRegNo], references: [regNo], onDelete: Cascade)
+
+  title    String           @default("New chat")
+  messages ChatbotMessage[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([studentRegNo, updatedAt])
+}
+
+model ChatbotMessage {
+  id String @id @default(cuid())
+
+  chatId String
+  chat   ChatbotChat @relation(fields: [chatId], references: [id], onDelete: Cascade)
+
+  role    ChatbotRole
+  content String      @db.Text
+
+  riskLevel RiskLevel @default(NONE)
+
+  createdAt DateTime @default(now())
+
+  @@index([chatId, createdAt])
 }
