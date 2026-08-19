@@ -11,6 +11,41 @@ export type ChatResponse = {
   memories_used: string[];
 };
 
+export type CheckInMood = {
+  time: "morning" | "evening" | "night";
+  mood: "very_happy" | "happy" | "neutral" | "sad" | "very_sad";
+};
+
+export type CheckInAnalysis = {
+  score: number;
+  category: "Excellent" | "Good" | "Needs Attention";
+  insights: string[];
+};
+
+export async function analyseDailyCheckIn(params: {
+  studentId: string;
+  moods: CheckInMood[];
+  answers: {
+    sleepHours: number | null;
+    happyMoment: string;
+    stressfulMoment: string;
+    waterIntake: "yes" | "no" | null;
+    dailyReflection: string;
+  };
+}): Promise<CheckInAnalysis> {
+  const res = await fetch(`${ML_SERVICE_URL}/check-ins/analyse`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ student_id: params.studentId, moods: params.moods, answers: params.answers }),
+  });
+
+  if (!res.ok) {
+    const body = await res.text().catch(() => "");
+    throw new Error(`ml-service request failed (${res.status}): ${body}`);
+  }
+  return (await res.json()) as CheckInAnalysis;
+}
+
 /**
  * Calls ml-service's /chat/message endpoint. Throws on network or non-2xx
  * responses so the caller's error handling (appErrorToTRPC) takes over.

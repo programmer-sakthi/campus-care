@@ -207,6 +207,12 @@ model DailyCheckIn {
 
   note String? @db.Text
 
+  // Answers and model guidance belong to the same dated check-in. Keeping
+  // them as JSON makes the check-in form extensible without turning each
+  // wording change into a database migration.
+  answers Json?
+  insights Json?
+
   mentalHealthScore Int?
 
   createdAt DateTime @default(now())

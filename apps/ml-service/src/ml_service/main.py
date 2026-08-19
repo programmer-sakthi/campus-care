@@ -6,6 +6,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from ml_service.chat.router import router as chat_router
+from ml_service.checkins.router import router as checkins_router
 from ml_service.config import settings
 from ml_service.core.knowledge_base import get_data_directory_state, get_index, sync_knowledge_base
 from ml_service.core.llm import configure_llm
@@ -23,6 +24,7 @@ app.add_middleware(
 )
 
 app.include_router(chat_router)
+app.include_router(checkins_router)
 
 
 async def _watch_knowledge_base() -> None:

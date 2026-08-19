@@ -1,6 +1,7 @@
 // components/WeeklyReview.tsx
 
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
   Card,
   CardContent,
@@ -16,12 +17,18 @@ import {
 } from "@repo/ui/components/select";
 import { Separator } from "@repo/ui/components/separator";
 import { Badge } from "@repo/ui/components/badge";
-import { mockWeeklySummaries, weekOptionsList } from "../mockdata/weeklyReview.mock";
 import type { WeekOption } from "../types/dailyCheckIn.types";
+import { trpc } from "../../../lib/trpc";
+
+const weekOptionsList: { value: WeekOption; label: string }[] = [
+  { value: "current", label: "Current Week" }, { value: "previous", label: "Previous Week" }, { value: "two_weeks_ago", label: "2 Weeks Ago" },
+];
+const offsets: Record<WeekOption, number> = { current: 0, previous: 1, two_weeks_ago: 2 };
 
 export function WeeklyReview() {
   const [selectedWeek, setSelectedWeek] = useState<WeekOption>("current");
-  const summary = mockWeeklySummaries[selectedWeek];
+  const reviewQuery = useQuery(trpc.dailyCheckIn.weeklyReview.queryOptions({ offset: offsets[selectedWeek] }));
+  const summary = reviewQuery.data;
 
   return (
     <Card className="rounded-2xl border-slate-200 shadow-sm">
@@ -50,19 +57,19 @@ export function WeeklyReview() {
         <div className="grid grid-cols-3 gap-4 text-center">
           <div>
             <p className="text-xl font-semibold text-slate-800">
-              {summary.averageMood.toFixed(1)}
+              {summary ? summary.averageMood.toFixed(1) : "—"}
             </p>
             <p className="text-xs text-slate-500">Avg. mood</p>
           </div>
           <div>
             <p className="text-xl font-semibold text-slate-800">
-              {summary.averageScore}
+              {summary?.averageScore ?? "—"}
             </p>
             <p className="text-xs text-slate-500">Avg. score</p>
           </div>
           <div>
             <p className="text-xl font-semibold text-slate-800">
-              {summary.totalCheckIns}
+              {summary?.totalCheckIns ?? "—"}
             </p>
             <p className="text-xs text-slate-500">Check-ins</p>
           </div>
@@ -73,7 +80,7 @@ export function WeeklyReview() {
         <div>
           <p className="mb-2 text-sm text-slate-500">Common emotions</p>
           <div className="flex flex-wrap gap-2">
-            {summary.commonEmotions.map((emotion) => (
+            {(summary?.commonEmotions ?? []).map((emotion) => (
               <Badge
                 key={emotion}
                 variant="outline"
@@ -82,6 +89,7 @@ export function WeeklyReview() {
                 {emotion}
               </Badge>
             ))}
+            {!reviewQuery.isLoading && summary?.commonEmotions.length === 0 && <p className="text-sm text-slate-500">No check-ins for this week yet.</p>}
           </div>
         </div>
       </CardContent>
