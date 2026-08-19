@@ -9,7 +9,7 @@ import {
 import { Input } from "@repo/ui/components/input"
 import { useState } from "react"
 import { useMutation } from "@tanstack/react-query"
-import { useNavigate } from "react-router"
+import { Link, useNavigate } from "react-router"
 import { trpc } from "../../lib/trpc"
 import { saveSession } from "../../lib/auth"
 
@@ -59,9 +59,9 @@ export function LoginForm({
         <Field>
           <FieldDescription className="text-center">
             Don&apos;t have an account?{" "}
-            <a href="#" className="underline underline-offset-4">
+            <Link to="/register" className="underline underline-offset-4">
               Sign up
-            </a>
+            </Link>
           </FieldDescription>
         </Field>
       </FieldGroup>

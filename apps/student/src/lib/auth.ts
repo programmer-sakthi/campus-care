@@ -1,6 +1,6 @@
 export type Session = {
   token: string;
-  user: { id: string; email: string; type: "STUDENT" | "COUNSELLOR" | "INSTITUTION"; studentRegNo?: string | null; counsellorEmail?: string | null; institutionCode?: string | null };
+  user: { id: string; email: string; name?: string | null; type: "STUDENT" | "COUNSELLOR" | "INSTITUTION"; studentRegNo?: string | null; counsellorEmail?: string | null; institutionCode?: string | null };
 };
 
 const key = "campus-care.session";

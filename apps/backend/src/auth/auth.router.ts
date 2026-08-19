@@ -7,23 +7,42 @@ import { createStudent } from "../routes/student.router";
 import { createCounsellor } from "../routes/counsellor.router";
 import { createInstitution } from "../routes/institution.router";
 
+const sessionUserSelect = {
+    id: true,
+    email: true,
+    type: true,
+    studentRegNo: true,
+    counsellorEmail: true,
+    institutionCode: true,
+    student: { select: { name: true } },
+    counsellor: { select: { name: true } },
+    institution: { select: { name: true } },
+} satisfies Prisma.UserSelect;
+
+type SessionUserRecord = Prisma.UserGetPayload<{ select: typeof sessionUserSelect }>;
+
+const toSessionUser = (user: SessionUserRecord) => ({
+    id: user.id,
+    email: user.email,
+    type: user.type,
+    studentRegNo: user.studentRegNo,
+    counsellorEmail: user.counsellorEmail,
+    institutionCode: user.institutionCode,
+    name: user.student?.name ?? user.counsellor?.name ?? user.institution?.name ?? null,
+});
+
+const findSessionUser = (id: string) => prisma.user.findUnique({
+    where: { id },
+    select: sessionUserSelect,
+});
+
 export const authRouter = router({
 
     me: protectedProcedure.query(async ({ ctx }) => {
-        const user = await prisma.user.findUnique({
-            where: { id: ctx.user.id },
-            select: {
-                id: true,
-                email: true,
-                type: true,
-                studentRegNo: true,
-                counsellorEmail: true,
-                institutionCode: true,
-            },
-        });
+        const user = await findSessionUser(ctx.user.id);
 
         if (!user) throw new Error("User no longer exists");
-        return user;
+        return toSessionUser(user);
     }),
 
 
@@ -141,9 +160,12 @@ export const authRouter = router({
                     type: user.type,
                 });
 
+                const sessionUser = await findSessionUser(user.id);
+                if (!sessionUser) throw new Error("User no longer exists");
+
                 return {
                     token,
-                    user,
+                    user: toSessionUser(sessionUser),
                 };
             }),
 
@@ -166,14 +188,13 @@ export const authRouter = router({
             .mutation(async ({ input }) => {
 
 
-                const user =
-                    await prisma.user.findUnique({
-
-                        where: {
-                            email: input.email
-                        }
-
-                    });
+                const user = await prisma.user.findUnique({
+                    where: { email: input.email },
+                    select: {
+                        ...sessionUserSelect,
+                        passwordHash: true,
+                    },
+                });
 
 
                 if (!user) {
@@ -219,7 +240,7 @@ export const authRouter = router({
 
                     token,
 
-                    user
+                    user: toSessionUser(user)
 
                 };
 

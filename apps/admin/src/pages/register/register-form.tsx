@@ -1,4 +1,5 @@
 import React, { useState } from "react"
+import { Link, useNavigate } from "react-router"
 import { cn } from "@repo/ui/lib/utils"
 import { useMutation } from "@tanstack/react-query"
 import { Button } from "@repo/ui/components/button"
@@ -15,6 +16,7 @@ export function RegisterForm({
   className,
   ...props
 }: React.ComponentProps<"form">) {
+  const navigate = useNavigate()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [institutionCode, setInstitutionCode] = useState("")
@@ -25,12 +27,7 @@ export function RegisterForm({
   const registerMutation = useMutation(
     trpc.auth.register.mutationOptions({
       onSuccess: () => {
-        setStatus("success")
-        setMessage("Institution account created successfully.")
-        setEmail("")
-        setPassword("")
-        setInstitutionCode("")
-        setInstitutionName("")
+        navigate("/login", { replace: true })
       },
       onError: (error: unknown) => {
         setStatus("error")
@@ -144,9 +141,9 @@ export function RegisterForm({
         <Field>
           <FieldDescription className="text-center">
             Already have an account?{" "}
-            <a href="#" className="underline underline-offset-4">
+            <Link to="/login" className="underline underline-offset-4">
               Log in
-            </a>
+            </Link>
           </FieldDescription>
         </Field>
       </FieldGroup>
