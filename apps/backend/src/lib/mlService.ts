@@ -22,6 +22,43 @@ export type CheckInAnalysis = {
   insights: string[];
 };
 
+export type EmotionalAuditDomainScore = {
+  domain: string;
+  label: string;
+  score: number;
+  level: "low" | "moderate" | "high";
+};
+
+export type EmotionalAuditAnalysis = {
+  summary: string;
+  recommendations: string[];
+  focus_domains: string[];
+};
+
+export async function analyseEmotionalAudit(params: {
+  studentId: string;
+  domainScores: EmotionalAuditDomainScore[];
+  overallScore: number;
+  overallCategory: "low" | "moderate" | "high";
+}): Promise<EmotionalAuditAnalysis> {
+  const res = await fetch(`${ML_SERVICE_URL}/emotional-audit/analyse`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      student_id: params.studentId,
+      domain_scores: params.domainScores,
+      overall_score: params.overallScore,
+      overall_category: params.overallCategory,
+    }),
+  });
+
+  if (!res.ok) {
+    const body = await res.text().catch(() => "");
+    throw new Error(`ml-service request failed (${res.status}): ${body}`);
+  }
+  return (await res.json()) as EmotionalAuditAnalysis;
+}
+
 export async function analyseDailyCheckIn(params: {
   studentId: string;
   moods: CheckInMood[];

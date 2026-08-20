@@ -53,8 +53,9 @@ model Student {
   institutionCode String
   institution     Institution @relation(fields: [institutionCode], references: [code])
 
-  appointments  Appointment[]
-  dailyCheckIns DailyCheckIn[]
+  appointments    Appointment[]
+  dailyCheckIns   DailyCheckIn[]
+  emotionalAudits EmotionalAudit[]
 
   conversations Conversation[]
 
@@ -288,6 +289,48 @@ enum RiskLevel {
 // One continuous "Emora" companion thread per student. Long-term facts
 // extracted from these messages live in ml-service's vector DB (keyed by
 // studentRegNo), not here — this table is just the durable message log.
+enum ConcernLevel {
+  LOW
+  MODERATE
+  HIGH
+}
+
+// A longer, periodic (every 10 days) structured mental-health screening —
+// distinct from the lightweight `DailyCheckIn`. Domain-level scoring is
+// computed deterministically in the backend (never trust the client); the
+// LLM in ml-service only turns those numbers into grounded, supportive
+// language. `safetyTriggered` is derived purely from the Section G answers
+// and is never gated behind the LLM call — see `emotional-audit.router.ts`.
+model EmotionalAudit {
+  id String @id @default(cuid())
+
+  studentRegNo String
+  student      Student @relation(fields: [studentRegNo], references: [regNo], onDelete: Cascade)
+
+  // Raw answers, keyed by question id (q1..q29). Kept as JSON so the
+  // question bank can evolve without a migration for every wording change.
+  answers Json
+
+  // Per-domain concern score, 0-100 (higher = more concern). Keyed by
+  // domain id, e.g. { "mood": 42, "anxiety": 68, ... }.
+  domainScores Json
+
+  overallScore    Int
+  overallCategory ConcernLevel
+
+  // Supportive, non-diagnostic recommendations from ml-service. Empty when
+  // `safetyTriggered` is true — the safety response is static, not model
+  // generated.
+  insights Json
+
+  safetyTriggered Boolean @default(false)
+
+  submittedAt DateTime @default(now())
+  createdAt   DateTime @default(now())
+
+  @@index([studentRegNo, submittedAt])
+}
+
 model ChatbotChat {
   id String @id @default(cuid())
 

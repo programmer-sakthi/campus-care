@@ -5,6 +5,7 @@ import { counsellorRouter } from "./routes/counsellor.router";
 import { institutionRouter } from "./routes/institution.router";
 import { studentRouter } from "./routes/student.router";
 import { dailyCheckInRouter } from "./routes/daily-checkin.router";
+import { emotionalAuditRouter } from "./routes/emotional-audit.router";
 import { router } from "./trpc";
 
 export const appRouter = router({
@@ -15,6 +16,7 @@ export const appRouter = router({
   chat: chatRouter,
   chatbot: chatbotRouter,
   dailyCheckIn: dailyCheckInRouter,
+  emotionalAudit: emotionalAuditRouter,
 });
 
 export type AppRouter = typeof appRouter;
