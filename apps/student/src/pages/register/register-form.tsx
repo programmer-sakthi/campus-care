@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Link, useNavigate } from "react-router";
 import { useMutation } from "@tanstack/react-query";
 
 import { cn } from "@repo/ui/lib/utils";
@@ -17,14 +18,14 @@ export function RegisterForm({
   className,
   ...props
 }: React.ComponentProps<"form">) {
+  const navigate = useNavigate();
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
   const registerMutation = useMutation(
     trpc.auth.register.mutationOptions({
       onSuccess: () => {
-        setError(null);
-        setSuccess("Registered successfully");
+        navigate("/login", { replace: true });
       },
       onError: (error: any) => {
         setSuccess(null);
@@ -130,9 +131,9 @@ export function RegisterForm({
 
             <span className="mt-2 block">
               Already have an account?{" "}
-              <a href="/login" className="underline underline-offset-4">
+              <Link to="/login" className="underline underline-offset-4">
                 Log in
-              </a>
+              </Link>
             </span>
           </FieldDescription>
         </Field>

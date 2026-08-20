@@ -1,0 +1,32 @@
+[project]
+name = "ml-service"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "chromadb>=1.5.9",
+    "fastapi>=0.141.1",
+    "groq>=1.6.0",
+    "llama-index-core>=0.14.23",
+    "llama-index-embeddings-huggingface>=0.7.0",
+    "llama-index-llms-groq>=0.5.0",
+    "llama-index-llms-openai>=0.6.26",
+    "llama-index-llms-openai-like>=0.5.3",
+    "llama-index-vector-stores-chroma>=0.5.5",
+    "pydantic>=2.13.4",
+    "pydantic-settings>=2.15.0",
+    "pymupdf>=1.28.2",
+    "sentence-transformers>=5.7.0",
+    "torch>=2.13.0",
+    "uvicorn>=0.52.3",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+
+[tool.turbo]
+name = "ml-service"
+

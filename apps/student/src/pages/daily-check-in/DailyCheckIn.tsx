@@ -1,9 +1,10 @@
 // DailyCheckIn.tsx
 
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@repo/ui/components/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@repo/ui/components/tabs";
 import { Separator } from "@repo/ui/components/separator";
+import { Button } from "@repo/ui/components/button";
 
 import { StreakCard } from "./components/StreakCard";
 import { MoodSelector } from "./components/MoodSelector";
@@ -13,21 +14,25 @@ import { MentalHealthScore } from "./components/MentalHealthScore";
 import { AIInsights } from "./components/AIInsights";
 import { WeeklyReview } from "./components/WeeklyReview";
 
-import {
-  mockCheckInAnswers,
-  mockStreak,
-  mockTodayMoods,
-} from "./mockdata/dailyCheckIn.mock";
-import { mockAIInsights } from "./mockdata/aiInsights.mock";
-
-import { calculateMentalHealthScore } from "./utils/calculateScore";
 import type {
   CheckInAnswers,
   MoodEntry,
   MoodLevel,
   MoodTime,
 } from "./types/dailyCheckIn.types";
-import { moodOptions } from "./mockdata/dailyCheckIn.mock";
+import { trpc, trpcClient } from "../../lib/trpc";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { moodOptions } from "./constants";
+
+const emptyAnswers: CheckInAnswers = { sleepHours: null, happyMoment: "", stressfulMoment: "", waterIntake: null, dailyReflection: "" };
+const emptyStreak = { currentStreak: 0, longestStreak: 0, lastCheckInDate: "" };
+type StoredCheckIn = {
+  answers: unknown;
+  insights: unknown;
+  mentalHealthScore: number | null;
+  moods: { time: "MORNING" | "EVENING" | "NIGHT"; mood: "VERY_GOOD" | "GOOD" | "NEUTRAL" | "BAD" | "VERY_BAD" }[];
+};
+type TodayResponse = { checkIn: StoredCheckIn | null; streak: { currentStreak: number; longestStreak: number; lastCheckInDate: string | null } };
 
 const TIME_LABELS: Record<MoodTime, string> = {
   morning: "Morning Mood",
@@ -36,8 +41,31 @@ const TIME_LABELS: Record<MoodTime, string> = {
 };
 
 export default function DailyCheckIn() {
-  const [moods, setMoods] = useState<MoodEntry[]>(mockTodayMoods);
-  const [answers, setAnswers] = useState<CheckInAnswers>(mockCheckInAnswers);
+  const [moods, setMoods] = useState<MoodEntry[]>([]);
+  const [answers, setAnswers] = useState<CheckInAnswers>(emptyAnswers);
+  const [result, setResult] = useState<{ score: number; category: "Excellent" | "Good" | "Needs Attention"; insights: string[] }>();
+  const todayQuery = useQuery(trpc.dailyCheckIn.today.queryOptions());
+  const today = todayQuery.data as TodayResponse | undefined;
+  const submit = useMutation({
+    mutationFn: (input: { moods: { time: MoodTime; mood: MoodLevel }[]; answers: CheckInAnswers }) => trpcClient.dailyCheckIn.submit.mutate(input),
+    onSuccess: (data) => {
+      setResult(data.result);
+      void todayQuery.refetch();
+    },
+  });
+
+  useEffect(() => {
+    const checkIn = today?.checkIn;
+    if (!checkIn) return;
+    const savedAnswers = checkIn.answers as CheckInAnswers | null;
+    if (savedAnswers) setAnswers(savedAnswers);
+    setMoods(checkIn.moods.map((entry) => {
+      const mood = ({ VERY_GOOD: "very_happy", GOOD: "happy", NEUTRAL: "neutral", BAD: "sad", VERY_BAD: "very_sad" } as const)[entry.mood];
+      const option = moodOptions.find((item) => item.level === mood)!;
+      return { time: entry.time.toLowerCase() as MoodTime, mood, emoji: option.emoji, score: option.score };
+    }));
+    if (checkIn.mentalHealthScore !== null) setResult({ score: checkIn.mentalHealthScore, category: checkIn.mentalHealthScore >= 80 ? "Excellent" : checkIn.mentalHealthScore >= 60 ? "Good" : "Needs Attention", insights: (checkIn.insights as string[] | null) ?? [] });
+  }, [today]);
 
   const handleMoodSelect = (time: MoodTime, mood: MoodLevel) => {
     const option = moodOptions.find((o) => o.level === mood);
@@ -56,11 +84,6 @@ export default function DailyCheckIn() {
     return moods.find((entry) => entry.time === time)?.mood ?? null;
   };
 
-  const scoreResult = useMemo(
-    () => calculateMentalHealthScore(moods, answers),
-    [moods, answers]
-  );
-
   const orderedTimes: MoodTime[] = ["morning", "evening", "night"];
 
   return (
@@ -75,7 +98,7 @@ export default function DailyCheckIn() {
           </p>
         </div>
 
-        <StreakCard streak={mockStreak} />
+        <StreakCard streak={today?.streak.lastCheckInDate ? { ...today.streak, lastCheckInDate: today.streak.lastCheckInDate } : emptyStreak} />
 
         <Tabs defaultValue="checkin" className="w-full">
           <TabsList className="rounded-xl bg-slate-100">
@@ -115,9 +138,12 @@ export default function DailyCheckIn() {
 
             <CheckInQuestions answers={answers} onChange={setAnswers} />
 
-            <MentalHealthScore result={scoreResult} />
-
-            <AIInsights insights={mockAIInsights} />
+            <Button className="w-full rounded-xl" disabled={moods.length === 0 || submit.isPending} onClick={() => submit.mutate({ moods: moods.map(({ time, mood }) => ({ time, mood })), answers })}>
+              {submit.isPending ? "Analysing your check-in..." : "Save check-in and get insights"}
+            </Button>
+            {submit.isError && <p className="text-sm text-red-600">Unable to analyse your check-in. Please try again.</p>}
+            {result && <MentalHealthScore result={result} />}
+            {result?.insights.length ? <AIInsights insights={result.insights.map((message, index) => ({ id: `${index}-${message}`, message }))} /> : null}
           </TabsContent>
 
           <TabsContent value="review" className="pt-4">

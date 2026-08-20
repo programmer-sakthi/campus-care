@@ -1,5 +1,8 @@
 {
   "$schema": "https://turborepo.dev/schema.json",
+  "futureFlags": {
+    "experimentalPythonWorkspaces": true
+  },
   "ui": "stream",
   "tasks": {
     "db:generate": {

@@ -1,5 +1,5 @@
-import { Brain, LogOut, User } from "lucide-react";
-import { NavLink, Outlet } from "react-router";
+import { Brain, LogOut } from "lucide-react";
+import { NavLink, Outlet, useNavigate } from "react-router";
 
 import {
   DropdownMenu,
@@ -12,6 +12,7 @@ import {
 } from "@repo/ui/components/dropdown-menu";
 
 import { Avatar, AvatarFallback } from "@repo/ui/components/avatar";
+import { clearSession, getSession } from "../lib/auth";
 
 const links = [
   { to: "/chat", label: "Chat" },
@@ -20,6 +21,16 @@ const links = [
 ];
 
 export default function AppLayout() {
+  const navigate = useNavigate();
+  const user = getSession()?.user;
+  const displayName = user?.name?.trim() || user?.email || "Counsellor";
+  const initial = displayName.charAt(0).toUpperCase();
+
+  const handleLogout = () => {
+    clearSession();
+    navigate("/", { replace: true });
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-neutral-50 via-white to-slate-100">
       <header className="fixed inset-x-0 top-6 z-50 flex justify-center">
@@ -69,7 +80,7 @@ export default function AppLayout() {
               <button className="rounded-full outline-none ring-offset-background transition hover:opacity-90 focus-visible:ring-2 focus-visible:ring-ring">
                 <Avatar className="size-10 cursor-pointer">
                   <AvatarFallback className="bg-neutral-800 text-white">
-                    <User className="size-5" />
+                    {initial}
                   </AvatarFallback>
                 </Avatar>
               </button>
@@ -79,9 +90,9 @@ export default function AppLayout() {
               <DropdownMenuGroup>
                 <DropdownMenuLabel>
                   <div className="flex flex-col">
-                    <span className="font-medium">John Doe</span>
+                    <span className="font-medium">{displayName}</span>
                     <span className="text-muted-foreground text-xs">
-                      Counsellor
+                      {user?.email ?? "Counsellor"}
                     </span>
                   </div>
                 </DropdownMenuLabel>
@@ -89,7 +100,7 @@ export default function AppLayout() {
 
               <DropdownMenuSeparator />
 
-              <DropdownMenuItem>
+              <DropdownMenuItem onClick={handleLogout}>
                 <LogOut className="mr-2 size-4" />
                 Logout
               </DropdownMenuItem>

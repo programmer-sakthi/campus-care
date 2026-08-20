@@ -19,8 +19,20 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@repo/ui/components/sidebar";
+import { useNavigate } from "react-router";
+import { clearSession, getSession } from "../lib/auth";
 
 export function NavUser() {
+  const navigate = useNavigate();
+  const user = getSession()?.user;
+  const displayName = user?.name?.trim() || user?.email || "Student";
+  const initial = displayName.charAt(0).toUpperCase();
+
+  const handleLogout = () => {
+    clearSession();
+    navigate("/login", { replace: true });
+  };
+
   return (
     <SidebarMenu>
       <SidebarMenuItem>
@@ -31,16 +43,16 @@ export function NavUser() {
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
               <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-                A
+                {initial}
               </div>
 
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-medium">
-                  Dr. Alice Johnson
+                  {displayName}
                 </span>
 
                 <span className="truncate text-xs text-muted-foreground">
-                  alice@campuscare.edu
+                  {user?.email ?? ""}
                 </span>
               </div>
 
@@ -67,7 +79,7 @@ export function NavUser() {
 
             <DropdownMenuSeparator />
 
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={handleLogout}>
               <LogOut className="mr-2 size-4" />
               Log out
             </DropdownMenuItem>

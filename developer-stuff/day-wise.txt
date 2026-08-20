@@ -45,8 +45,8 @@ Day 8 :
 
 PHRASE 2 : 
 
-- crisis detection
+- crisis detection 
+- peer support module 
 - admin insights 
-- student insights 
-- Adding students performance data to the RAG
-- peer support module
+- student insights  
+- Adding students performance data to the RAG 

@@ -1,7 +1,7 @@
 // components/MoodSelector.tsx
 
 import { Button } from "@repo/ui/components/button";
-import { moodOptions } from "../mockdata/dailyCheckIn.mock";
+import { moodOptions } from "../constants";
 import type { MoodLevel, MoodTime } from "../types/dailyCheckIn.types";
 import { cn } from "@repo/ui/lib/utils";
 
